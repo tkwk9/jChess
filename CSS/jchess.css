@@ -1,0 +1,87 @@
+
+.outer-board {
+  width: 598px;
+  height: 598px;
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid black;
+}
+
+.outer-board .markers {
+  display: flex;
+  justify-content: space-around;
+  font-size: 20px;
+  font-family: 'Gloria Hallelujah', cursive;
+}
+
+.outer-board .markers.alphabet{
+  width: 598px;
+  height: 42px;
+  padding: 0 42px;
+  flex-direction: row;
+}
+
+.outer-board .markers.alphabet .mark {
+  line-height: 42px;
+  vertical-align: middle;
+}
+
+.outer-board .markers.num{
+  width: 42px;
+  height: 514px;
+  flex-direction: column;
+}
+
+.outer-board .markers.num .mark {
+  text-align: center;
+}
+
+.outer-board .flipped .mark {
+  transform: rotate(180deg);
+}
+
+.inner-board {
+  width: 512px;
+  height: 512px;
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid black;
+}
+
+.tile {
+  width: 64px;
+  height: 64px;
+  line-height: 64px;
+  text-align: center;
+  vertical-align: middle;
+  box-sizing: border-box;
+  font-size: 45px;
+}
+
+.tile:hover {
+  cursor: pointer;
+}
+
+.tile.p1-hover {
+  border: 2px solid red;
+  line-height: 60px;
+}
+.tile.p2-hover {
+  border: 2px solid purple;
+  line-height: 60px;
+}
+
+.tile.light {
+  background-color: #cec1ab;
+}
+.tile.dark {
+  background-color: #876124;
+}
+.tile.light.path {
+  /* background-color: #9568ba; */
+  box-shadow: inset 0 0 100px red;
+}
+.tile.dark.path {
+  /* background-color: #432e54; */
+  box-shadow: inset 0 0 100px red;
+}
