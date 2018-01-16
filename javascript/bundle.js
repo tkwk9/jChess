@@ -142,9 +142,7 @@ class jChessView {
     this.$outerBoard.append(this.makeMarkers("alphabet"));
 
     this.$mainDiv.append(this.$outerBoard);
-    return this.$innerBoard;
   }
-
 
   makeMarkers(mode) {
     let marks;
