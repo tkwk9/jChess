@@ -157,10 +157,13 @@ export class Pawn extends Piece {
     let allMoves = [];
     let tempPos = this.addDirection(this.position, this.direction);
 
-    if (this.board.isInBound(tempPos)) {
+    if (this.board.isInBound(tempPos) && this.board.isEmptyTile(tempPos)) {
       allMoves.push(tempPos);
       if (this.startingPosition === this.position){
-        allMoves.push(this.addDirection(tempPos, this.direction));
+        tempPos = this.addDirection(tempPos, this.direction);
+        if (this.board.isEmptyTile(tempPos)){
+          allMoves.push(tempPos);
+        }
       }
     }
 

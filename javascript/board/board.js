@@ -153,6 +153,7 @@ class Board {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     }
+    this.game.changeTurns();
   }
 
   removePiece(pos) {

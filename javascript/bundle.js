@@ -96,7 +96,16 @@ class jChess {
     this.board.setTurn(this.turn);
   }
 
+  changeTurns() {
+    if (this.turn === "white") {
+      this.turn = "black";
+      this.board.setTurn(this.turn);
+    } else {
+      this.turn = "white";
+      this.board.setTurn(this.turn);
 
+    }
+  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (jChess);
@@ -321,6 +330,7 @@ class Board {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     }
+    this.game.changeTurns();
   }
 
   removePiece(pos) {
@@ -570,10 +580,13 @@ class Pawn extends Piece {
     let allMoves = [];
     let tempPos = this.addDirection(this.position, this.direction);
 
-    if (this.board.isInBound(tempPos)) {
+    if (this.board.isInBound(tempPos) && this.board.isEmptyTile(tempPos)) {
       allMoves.push(tempPos);
       if (this.startingPosition === this.position){
-        allMoves.push(this.addDirection(tempPos, this.direction));
+        tempPos = this.addDirection(tempPos, this.direction);
+        if (this.board.isEmptyTile(tempPos)){
+          allMoves.push(tempPos);
+        }
       }
     }
 
