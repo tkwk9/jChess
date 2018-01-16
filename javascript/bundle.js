@@ -79,8 +79,6 @@ $( () => {
 
   const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
   const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game.getBoard());
-
-  // Your code here
 });
 
 
@@ -95,6 +93,7 @@ $( () => {
 class jChess {
   constructor() {
     this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
+    window.board = this.board;
     this.turn = "white";
     this.board.setGame(this);
     this.board.setTurn(this.turn);
@@ -148,7 +147,7 @@ class jChessView {
   }
 
   showMoves(pos) {
-    this.moves = this.board.getPiece(pos).getMoves();
+    this.moves = this.board.getPiece(pos).getValidMoves();
     this.p1Hover = pos;
   }
 
@@ -196,6 +195,7 @@ class jChessView {
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);
+          this.board.game.changeTurns();
           this.removeMoves();
           this.update();
         } else {
@@ -308,8 +308,11 @@ class jChessView {
 
 
 class Board {
-  constructor(){
-    this.letThereBeGrid();
+  constructor(starting = true){
+    this.piecesGrid = [[],[],[],[],[],[],[],[]];
+    if(starting){
+      this.letThereBeGrid();
+    }
   }
 
   setGame(game) {
@@ -320,40 +323,70 @@ class Board {
     this.turn = turn;
   }
 
-  letThereBeGrid() {
-    this.piecesGrid = [[],[],[],[],[],[],[],[]];
+  dup() {
+    const newBoard = new Board(false);
 
-    this.nullPiece = new __WEBPACK_IMPORTED_MODULE_0__piece__["d" /* NullPiece */]();
-    let pieceOrder = [
-      __WEBPACK_IMPORTED_MODULE_0__piece__["g" /* Rook */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["c" /* Knight */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["a" /* Bishop */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["f" /* Queen */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["b" /* King */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["a" /* Bishop */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["c" /* Knight */],
-      __WEBPACK_IMPORTED_MODULE_0__piece__["g" /* Rook */]
-    ];
     for (let i = 0; i < 8; i++){
       for (let j = 0; j < 8; j++){
-        if (i === 0){
-          this.piecesGrid[i][j] =
-            new pieceOrder[j]({x: i, y: j}, this, "white");
-        } else if (i === 1){
-          this.piecesGrid[i][j] =
-            new __WEBPACK_IMPORTED_MODULE_0__piece__["e" /* Pawn */]({x: i, y: j}, this, "white");
-        } else if (i === 6){
-          this.piecesGrid[i][j] =
-            new __WEBPACK_IMPORTED_MODULE_0__piece__["e" /* Pawn */]({x: i, y: j}, this, "black");
-        } else if (i === 7){
-          this.piecesGrid[i][j] =
-            new pieceOrder[j]({x: i, y: j}, this, "black");
+        let pos = {x:i, y:j};
+        newBoard.nullPiece = this.nullPiece;
+        if (this.isEmptyTile(pos)) {
+          newBoard.piecesGrid[i][j] = this.nullPiece;
         } else {
-          this.piecesGrid[i][j] = this.nullPiece;
+          newBoard.piecesGrid[i][j] = this.piecesGrid[i][j].dup(newBoard);
+          if (this.piecesGrid[i][j] === this.blackKing){
+            newBoard.blackKing = newBoard.piecesGrid[i][j];
+          } else if (this.piecesGrid[i][j] === this.whiteKing){
+            newBoard.whiteKing = newBoard.piecesGrid[i][j];
+          }
         }
       }
     }
+    return newBoard;
   }
+
+  isInCheckMate(color){
+    return this.getPieces(color).filter(piece => piece.getValidMoves().length > 0).length <= 0;
+  }
+
+  getPieces(color) {
+    let pieces = [];
+    for (let i = 0; i < 8; i++){
+      for (let j = 0; j < 8; j++){
+        let pos = {x:i, y:j};
+        if (this.getPiece(pos).color === color){
+          pieces.push(this.getPiece(pos));
+        }
+      }
+    }
+    return pieces;
+  }
+
+  isInCheck(color) {
+    let opponent;
+    let king;
+    if (color === 'white'){
+      opponent = 'black';
+      king = this.whiteKing;
+    } else {
+      opponent = 'white';
+      king = this.blackKing;
+    }
+
+    let pieces = this.getPieces(opponent);
+
+    for (let i = 0; i < pieces.length; i++){
+      let moves = pieces[i].getMoves();
+      for (let j = 0; j < moves.length; j++){
+        if (moves[j].x === king.position.x && moves[j].y === king.position.y){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
 
   getPiece(position) {
     return this.piecesGrid[position.x][position.y];
@@ -378,7 +411,7 @@ class Board {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     }
-    this.game.changeTurns();
+
   }
 
   removePiece(pos) {
@@ -397,6 +430,45 @@ class Board {
   isInBound(position) {
     return (position.x >=0 && position.x <= 7) &&
       (position.y >=0 && position.y <= 7);
+  }
+
+  letThereBeGrid() {
+    this.nullPiece = new __WEBPACK_IMPORTED_MODULE_0__piece__["d" /* NullPiece */]();
+    let pieceOrder = [
+      __WEBPACK_IMPORTED_MODULE_0__piece__["g" /* Rook */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["c" /* Knight */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["a" /* Bishop */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["f" /* Queen */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["b" /* King */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["a" /* Bishop */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["c" /* Knight */],
+      __WEBPACK_IMPORTED_MODULE_0__piece__["g" /* Rook */]
+    ];
+    for (let i = 0; i < 8; i++){
+      for (let j = 0; j < 8; j++){
+        if (i === 0){
+          this.piecesGrid[i][j] =
+            new pieceOrder[j]({x: i, y: j}, this, "white");
+          if (j === 4) {
+            this.whiteKing = this.piecesGrid[i][j];
+          }
+        } else if (i === 1){
+          this.piecesGrid[i][j] =
+            new __WEBPACK_IMPORTED_MODULE_0__piece__["e" /* Pawn */]({x: i, y: j}, this, "white");
+        } else if (i === 6){
+          this.piecesGrid[i][j] =
+            new __WEBPACK_IMPORTED_MODULE_0__piece__["e" /* Pawn */]({x: i, y: j}, this, "black");
+        } else if (i === 7){
+          this.piecesGrid[i][j] =
+            new pieceOrder[j]({x: i, y: j}, this, "black");
+            if (j === 4) {
+              this.blackKing = this.piecesGrid[i][j];
+            }
+        } else {
+          this.piecesGrid[i][j] = this.nullPiece;
+        }
+      }
+    }
   }
 }
 
@@ -436,6 +508,19 @@ class Piece {
       x: position.x + direction.x,
       y: position.y + direction.y
     };
+  }
+
+  getValidMoves() {
+    let moves = this.getMoves();
+    return moves.filter(move => {
+      let newBoard = this.board.dup();
+      newBoard.movePiece(this.position, move);
+      return !newBoard.isInCheck(this.color);
+    });
+  }
+
+  dup(board) {
+    return new this.constructor(this.position, board, this.color);
   }
 }
 

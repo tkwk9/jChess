@@ -3,6 +3,7 @@ import Board from "./board/board";
 class jChess {
   constructor() {
     this.board = new Board();
+    window.board = this.board;
     this.turn = "white";
     this.board.setGame(this);
     this.board.setTurn(this.turn);

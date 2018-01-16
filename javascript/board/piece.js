@@ -25,6 +25,19 @@ class Piece {
       y: position.y + direction.y
     };
   }
+
+  getValidMoves() {
+    let moves = this.getMoves();
+    return moves.filter(move => {
+      let newBoard = this.board.dup();
+      newBoard.movePiece(this.position, move);
+      return !newBoard.isInCheck(this.color);
+    });
+  }
+
+  dup(board) {
+    return new this.constructor(this.position, board, this.color);
+  }
 }
 
 class SteppingPiece extends Piece {

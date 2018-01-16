@@ -22,7 +22,7 @@ class jChessView {
   }
 
   showMoves(pos) {
-    this.moves = this.board.getPiece(pos).getMoves();
+    this.moves = this.board.getPiece(pos).getValidMoves();
     this.p1Hover = pos;
   }
 
@@ -70,6 +70,7 @@ class jChessView {
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);
+          this.board.game.changeTurns();
           this.removeMoves();
           this.update();
         } else {
