@@ -4,7 +4,8 @@ import jChessView from './j_chess_view';
 $( () => {
   const $mainDiv = $('#j-chess');
 
-  const view = new jChessView($mainDiv);
-  const game = new jChess(view.getBoard());
+  const game = new jChess();
+  const view = new jChessView($mainDiv, game.getBoard());
+
   // Your code here
 });

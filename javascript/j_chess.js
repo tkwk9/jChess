@@ -1,9 +1,15 @@
+import Board from "./board/board";
+
 class jChess {
-  constructor(board) {
-    this.board = board;
+  constructor() {
+    this.board = new Board();
     this.turn = "white";
     this.board.setGame(this);
     this.board.setTurn(this.turn);
+  }
+
+  getBoard() {
+    return this.board;
   }
 
   changeTurns() {
@@ -13,7 +19,6 @@ class jChess {
     } else {
       this.turn = "white";
       this.board.setTurn(this.turn);
-
     }
   }
 }
