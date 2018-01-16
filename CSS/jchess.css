@@ -7,6 +7,15 @@ h1 {
   margin: 0 auto;
 }
 
+#game-status {
+  font-size: 40px;
+  height: 90px;
+  font-family: 'Gloria Hallelujah', cursive;
+  text-align: center;
+  margin: 0 auto;
+
+}
+
 .outer-board {
   margin: 0 auto;
   width: 598px;

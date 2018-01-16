@@ -95,6 +95,7 @@ class jChess {
     this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
     window.board = this.board;
     this.turn = "white";
+    $('#game-status').html("White's Turn");
     this.board.setGame(this);
     this.board.setTurn(this.turn);
   }
@@ -106,12 +107,15 @@ class jChess {
   changeTurns() {
     if (this.turn === "white") {
       this.turn = "black";
+      $('#game-status').html("Black's Turn");
       this.board.setTurn(this.turn);
     } else {
       this.turn = "white";
       this.board.setTurn(this.turn);
+      $('#game-status').html("White's Turn");
     }
   }
+
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (jChess);
