@@ -166,6 +166,12 @@ export class Pawn extends Piece {
     }
   }
 
+  dup(board) {
+    let copy = new this.constructor(this.position, board, this.color);
+    copy.startingPosition = this.startingPosition;
+    return copy;
+  }
+
   getMoves() {
     let allMoves = [];
     let tempPos = this.addDirection(this.position, this.direction);

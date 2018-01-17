@@ -80,6 +80,19 @@ class Board {
     return false;
   }
 
+  getAllMoves(color) {
+    let pieces = this.getPieces(color);
+    let duplications = [];
+    pieces.forEach( piece => {
+      piece.getValidMoves().forEach( move => {
+        let dup = this.dup();
+        dup.movePiece(piece.position, move);
+        duplications.push(dup);
+      });
+    });
+    return duplications;
+  }
+
 
 
   getPiece(position) {
