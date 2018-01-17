@@ -18,11 +18,11 @@ class Board {
 
   dup() {
     const newBoard = new Board(false);
+    newBoard.nullPiece = this.nullPiece;
 
     for (let i = 0; i < 8; i++){
       for (let j = 0; j < 8; j++){
         let pos = {x:i, y:j};
-        newBoard.nullPiece = this.nullPiece;
         if (this.isEmptyTile(pos)) {
           newBoard.piecesGrid[i][j] = this.nullPiece;
         } else {
@@ -39,7 +39,8 @@ class Board {
   }
 
   isInCheckMate(color){
-    return this.getPieces(color).filter(piece => piece.getValidMoves().length > 0).length <= 0;
+    return this.getPieces(color).filter(piece =>
+      piece.getValidMoves().length > 0).length <= 0;
   }
 
   getPieces(color) {
