@@ -96,7 +96,7 @@ class jChess {
   constructor() {
     this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
     this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
-    this.ai.letThereBeTree();
+    // this.ai.letThereBeTree();
     window.board = this.board;
     this.turn = "white";
     $('#game-status').html("White's Turn");

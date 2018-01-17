@@ -5,7 +5,7 @@ class jChess {
   constructor() {
     this.board = new Board();
     this.ai = new AI(this.board, "black");
-    this.ai.letThereBeTree();
+    // this.ai.letThereBeTree();
     window.board = this.board;
     this.turn = "white";
     $('#game-status').html("White's Turn");
