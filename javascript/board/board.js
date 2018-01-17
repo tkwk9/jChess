@@ -118,7 +118,6 @@ class Board {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     }
-
   }
 
   removePiece(pos) {

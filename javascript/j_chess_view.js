@@ -1,9 +1,12 @@
 import Board from './board/board';
 
 class jChessView {
-  constructor($mainDiv, board) {
+  constructor($mainDiv, game, board) {
     this.$mainDiv = $mainDiv;
+    this.game = game;
     this.board = board;
+    this.tileGrid = [[],[],[],[],[],[],[],[]];
+
     this.moves = [];
     this.p1Hover = undefined;
     this.p2Hover = undefined;
@@ -70,7 +73,7 @@ class jChessView {
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);
-          this.board.game.changeTurns();
+          this.game.changeTurns();
           this.removeMoves();
           this.update();
         } else {
@@ -126,7 +129,6 @@ class jChessView {
   }
 
   setupBoard() {
-    this.tileGrid = [[],[],[],[],[],[],[],[]];
 
     for (let i = 63; i >= 0; i--) {
       const $tile = $('<li class="tile"></li>');

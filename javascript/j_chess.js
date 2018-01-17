@@ -7,7 +7,12 @@ class jChess {
     this.ai = new AI(this.board, "black");
     // this.ai.letThereBeTree();
     window.board = this.board;
+
     this.turn = "white";
+    this.opponent = {};
+    this.opponent["black"] = "white";
+    this.opponent["white"] = "black";
+
     $('#game-status').html("White's Turn");
     this.board.setGame(this);
     this.board.setTurn(this.turn);
@@ -18,22 +23,28 @@ class jChess {
   }
 
   changeTurns() {
-    if (this.turn === "white") {
-      this.turn = "black";
-      $('#game-status').html("Black's Turn");
-      this.board.setTurn(this.turn);
-      if (this.board.isInCheckMate("black")){
-        $('#game-status').html(`Checkmate! White wins!`);
-      }
+
+    this.turn = this.opponent[this.turn];
+    this.board.setTurn(this.turn);
+    this.evaluateGameStatus();
+
+  }
+
+  evaluateGameStatus() {
+    if (this.board.isInCheckMate(this.turn)){
+      const winner = this.opponent[this.turn].charAt(0).toUpperCase() +
+        this.opponent[this.turn].slice(1);
+      $('#game-status').html(`Checkmate! ${winner} wins!`);
+    } else if (this.board.isInCheck(this.turn)) {
+      $('#game-status').html("Check!");
     } else {
-      this.turn = "white";
-      this.board.setTurn(this.turn);
-      $('#game-status').html("White's Turn");
-      if (this.board.isInCheckMate("white")){
-        $('#game-status').html(`Checkmate! Black wins!`);
-      }
+      const player = this.turn.charAt(0).toUpperCase() +
+        this.turn.slice(1);
+      $('#game-status').html(`${player}'s turn'`);
     }
   }
+
+
 }
 
 export default jChess;

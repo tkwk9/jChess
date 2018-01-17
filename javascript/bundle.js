@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,256 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__j_chess__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__j_chess_view__ = __webpack_require__(2);
-
-
-
-$( () => {
-  const $mainDiv = $('#j-chess');
-
-  const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
-  const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game.getBoard());
-});
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board_board__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AI_ai__ = __webpack_require__(7);
-
-
-
-class jChess {
-  constructor() {
-    this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
-    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
-    // this.ai.letThereBeTree();
-    window.board = this.board;
-    this.turn = "white";
-    $('#game-status').html("White's Turn");
-    this.board.setGame(this);
-    this.board.setTurn(this.turn);
-  }
-
-  getBoard() {
-    return this.board;
-  }
-
-  changeTurns() {
-    if (this.turn === "white") {
-      this.turn = "black";
-      $('#game-status').html("Black's Turn");
-      this.board.setTurn(this.turn);
-      if (this.board.isInCheckMate("black")){
-        $('#game-status').html(`Checkmate! White wins!`);
-      }
-    } else {
-      this.turn = "white";
-      this.board.setTurn(this.turn);
-      $('#game-status').html("White's Turn");
-      if (this.board.isInCheckMate("white")){
-        $('#game-status').html(`Checkmate! Black wins!`);
-      }
-    }
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (jChess);
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board_board__ = __webpack_require__(3);
-
-
-class jChessView {
-  constructor($mainDiv, board) {
-    this.$mainDiv = $mainDiv;
-    this.board = board;
-    this.moves = [];
-    this.p1Hover = undefined;
-    this.p2Hover = undefined;
-    this.setupMarkers();
-    this.setupBoard();
-    this.update();
-  }
-
-  getTile(position) {
-    return this.tileGrid[position.x][position.y];
-  }
-
-  isInMoves(pos){
-    return this.moves.filter( move => move.x === pos.x &&
-      move.y === pos.y).length > 0;
-  }
-
-  showMoves(pos) {
-    this.moves = this.board.getPiece(pos).getValidMoves();
-    this.p1Hover = pos;
-  }
-
-  removeMoves() {
-    this.moves = [];
-    this.p1Hover = undefined;
-    this.p2Hover = undefined;
-    this.startPos = undefined;
-    this.update();
-  }
-
-  clearBoard() {
-    this.tileGrid.forEach(row => {
-      row.forEach(tile => {
-        tile.removeClass('path');
-        tile.removeClass('p1-hover');
-        tile.removeClass('p2-hover');
-        tile.empty();
-      });
-    });
-  }
-
-  update() {
-    this.clearBoard();
-
-    for (let i = 0; i < 8; i++){
-      for (let j = 0; j < 8; j++){
-        this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);
-      }
-    }
-
-    this.moves.forEach((move) => {
-      this.getTile(move).addClass('path');
-    });
-    if (this.p1Hover) {
-      this.getTile(this.p1Hover).addClass('p1-hover');
-    }
-    if (this.p2Hover) {
-      this.getTile(this.p2Hover).addClass('p2-hover');
-    }
-  }
-
-  handleClick(pos) {
-    return () => {
-      if (this.startPos) {
-        if(this.isInMoves(pos)){
-          this.board.movePiece(this.startPos, pos);
-          this.board.game.changeTurns();
-          this.removeMoves();
-          this.update();
-        } else {
-          this.removeMoves();
-          this.update();
-        }
-      } else {
-        if(this.board.isPieceTurn(pos)){
-          this.showMoves(pos);
-          this.startPos = pos;
-        }
-      }
-    };
-  }
-
-  handleMouseEnter(pos) {
-    return () => {
-      if(!this.startPos){
-        if(this.board.isPieceTurn(pos)){
-          this.showMoves(pos);
-        }
-      } else {
-        if (this.isInMoves(pos)){
-          this.p2Hover = pos;
-        } else {
-          this.p2Hover = undefined;
-        }
-      }
-      this.update();
-    };
-  }
-
-  handleMouseLeave() {
-    return () => {
-      if(!this.startPos){
-        this.removeMoves();
-        this.update();
-      }
-    };
-  }
-
-  setupMarkers() {
-    this.$outerBoard = $(`<div class="outer-board"></div>`);
-    this.$innerBoard = $('<ul class="inner-board"></ul>');
-
-    this.$outerBoard.append(this.makeMarkers("alphabet").addClass("flipped"));
-    this.$outerBoard.append(this.makeMarkers("num"));
-    this.$outerBoard.append(this.$innerBoard);
-    this.$outerBoard.append(this.makeMarkers("num").addClass("flipped"));
-    this.$outerBoard.append(this.makeMarkers("alphabet"));
-
-    this.$mainDiv.append(this.$outerBoard);
-  }
-
-  setupBoard() {
-    this.tileGrid = [[],[],[],[],[],[],[],[]];
-
-    for (let i = 63; i >= 0; i--) {
-      const $tile = $('<li class="tile"></li>');
-      const pos = {x: Math.floor(i/8), y: 7 - (i % 8)};
-      $tile.data('pos', pos);
-      $tile.click(
-        this.handleClick(pos)
-      );
-
-      $tile.hover(
-        this.handleMouseEnter(pos),
-        this.handleMouseLeave()
-      );
-
-      if((pos.x + pos.y) % 2 === 0){
-        $tile.addClass('dark');
-      } else {
-        $tile.addClass('light');
-      }
-      this.tileGrid[pos.x][pos.y] = $tile;
-      this.$innerBoard.append($tile);
-    }
-  }
-
-  makeMarkers(mode) {
-    let marks;
-    let classType;
-    switch (mode){
-      case 'num':
-        marks = [8,7,6,5,4,3,2,1];
-        classType = "num";
-        break;
-      case 'alphabet':
-        marks = ["a","b","c","d","e","f","g","h"];
-        classType = "alphabet";
-        break;
-    }
-    const markDivs = marks.map( mark => $(`<div class="mark">${mark}</div>`));
-    const $markerDiv = $(`<div class="markers ${classType}"></div>`);
-    markDivs.forEach( $markDiv => $markerDiv.append($markDiv));
-    return $markerDiv;
-  }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (jChessView);
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__piece__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__piece__ = __webpack_require__(3);
 
 
 class Board {
@@ -438,7 +189,6 @@ class Board {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     }
-
   }
 
   removePiece(pos) {
@@ -503,9 +253,85 @@ class Board {
 
 
 /***/ }),
-/* 4 */,
-/* 5 */,
-/* 6 */
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__j_chess__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__j_chess_view__ = __webpack_require__(13);
+
+
+
+$( () => {
+  const $mainDiv = $('#j-chess');
+
+  const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
+  const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.getBoard());
+});
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board_board__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AI_ai__ = __webpack_require__(4);
+
+
+
+class jChess {
+  constructor() {
+    this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
+    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
+    // this.ai.letThereBeTree();
+    window.board = this.board;
+
+    this.turn = "white";
+    this.opponent = {};
+    this.opponent["black"] = "white";
+    this.opponent["white"] = "black";
+
+    $('#game-status').html("White's Turn");
+    this.board.setGame(this);
+    this.board.setTurn(this.turn);
+  }
+
+  getBoard() {
+    return this.board;
+  }
+
+  changeTurns() {
+
+    this.turn = this.opponent[this.turn];
+    this.board.setTurn(this.turn);
+    this.evaluateGameStatus();
+
+  }
+
+  evaluateGameStatus() {
+    if (this.board.isInCheckMate(this.turn)){
+      const winner = this.opponent[this.turn].charAt(0).toUpperCase() +
+        this.opponent[this.turn].slice(1);
+      $('#game-status').html(`Checkmate! ${winner} wins!`);
+    } else if (this.board.isInCheck(this.turn)) {
+      $('#game-status').html("Check!");
+    } else {
+      const player = this.turn.charAt(0).toUpperCase() +
+        this.turn.slice(1);
+      $('#game-status').html(`${player}'s turn'`);
+    }
+  }
+
+
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (jChess);
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -736,11 +562,11 @@ class NullPiece extends Piece {
 
 
 /***/ }),
-/* 7 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tree_node__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tree_node__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tree_node___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_tree_node__);
 
 
@@ -786,13 +612,13 @@ class AI {
 
 
 /***/ }),
-/* 8 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isBrowser = this.window ? true : false,
-objectId =  __webpack_require__(9),
-inherits =  __webpack_require__(10).inherits,
-EventEmitter =  __webpack_require__(15);
+objectId =  __webpack_require__(6),
+inherits =  __webpack_require__(7).inherits,
+EventEmitter =  __webpack_require__(12);
 
 module.exports = Node;
 
@@ -1303,7 +1129,7 @@ Object.defineProperties(o, {
 
 
 /***/ }),
-/* 9 */
+/* 6 */
 /***/ (function(module, exports) {
 
 /**
@@ -1324,7 +1150,7 @@ function objectId() {
 module.exports = objectId;
 
 /***/ }),
-/* 10 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -1852,7 +1678,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(13);
+exports.isBuffer = __webpack_require__(10);
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -1896,7 +1722,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = __webpack_require__(14);
+exports.inherits = __webpack_require__(11);
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -1914,10 +1740,10 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(9)))
 
 /***/ }),
-/* 11 */
+/* 8 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1944,7 +1770,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 12 */
+/* 9 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -2134,7 +1960,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 13 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function isBuffer(arg) {
@@ -2145,7 +1971,7 @@ module.exports = function isBuffer(arg) {
 }
 
 /***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -2174,7 +2000,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 15 */
+/* 12 */
 /***/ (function(module, exports) {
 
 
@@ -2341,6 +2167,190 @@ Emitter.prototype.listeners = function(event){
 Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board_board__ = __webpack_require__(0);
+
+
+class jChessView {
+  constructor($mainDiv, game, board) {
+    this.$mainDiv = $mainDiv;
+    this.game = game;
+    this.board = board;
+    this.tileGrid = [[],[],[],[],[],[],[],[]];
+
+    this.moves = [];
+    this.p1Hover = undefined;
+    this.p2Hover = undefined;
+    this.setupMarkers();
+    this.setupBoard();
+    this.update();
+  }
+
+  getTile(position) {
+    return this.tileGrid[position.x][position.y];
+  }
+
+  isInMoves(pos){
+    return this.moves.filter( move => move.x === pos.x &&
+      move.y === pos.y).length > 0;
+  }
+
+  showMoves(pos) {
+    this.moves = this.board.getPiece(pos).getValidMoves();
+    this.p1Hover = pos;
+  }
+
+  removeMoves() {
+    this.moves = [];
+    this.p1Hover = undefined;
+    this.p2Hover = undefined;
+    this.startPos = undefined;
+    this.update();
+  }
+
+  clearBoard() {
+    this.tileGrid.forEach(row => {
+      row.forEach(tile => {
+        tile.removeClass('path');
+        tile.removeClass('p1-hover');
+        tile.removeClass('p2-hover');
+        tile.empty();
+      });
+    });
+  }
+
+  update() {
+    this.clearBoard();
+
+    for (let i = 0; i < 8; i++){
+      for (let j = 0; j < 8; j++){
+        this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);
+      }
+    }
+
+    this.moves.forEach((move) => {
+      this.getTile(move).addClass('path');
+    });
+    if (this.p1Hover) {
+      this.getTile(this.p1Hover).addClass('p1-hover');
+    }
+    if (this.p2Hover) {
+      this.getTile(this.p2Hover).addClass('p2-hover');
+    }
+  }
+
+  handleClick(pos) {
+    return () => {
+      if (this.startPos) {
+        if(this.isInMoves(pos)){
+          this.board.movePiece(this.startPos, pos);
+          this.game.changeTurns();
+          this.removeMoves();
+          this.update();
+        } else {
+          this.removeMoves();
+          this.update();
+        }
+      } else {
+        if(this.board.isPieceTurn(pos)){
+          this.showMoves(pos);
+          this.startPos = pos;
+        }
+      }
+    };
+  }
+
+  handleMouseEnter(pos) {
+    return () => {
+      if(!this.startPos){
+        if(this.board.isPieceTurn(pos)){
+          this.showMoves(pos);
+        }
+      } else {
+        if (this.isInMoves(pos)){
+          this.p2Hover = pos;
+        } else {
+          this.p2Hover = undefined;
+        }
+      }
+      this.update();
+    };
+  }
+
+  handleMouseLeave() {
+    return () => {
+      if(!this.startPos){
+        this.removeMoves();
+        this.update();
+      }
+    };
+  }
+
+  setupMarkers() {
+    this.$outerBoard = $(`<div class="outer-board"></div>`);
+    this.$innerBoard = $('<ul class="inner-board"></ul>');
+
+    this.$outerBoard.append(this.makeMarkers("alphabet").addClass("flipped"));
+    this.$outerBoard.append(this.makeMarkers("num"));
+    this.$outerBoard.append(this.$innerBoard);
+    this.$outerBoard.append(this.makeMarkers("num").addClass("flipped"));
+    this.$outerBoard.append(this.makeMarkers("alphabet"));
+
+    this.$mainDiv.append(this.$outerBoard);
+  }
+
+  setupBoard() {
+
+    for (let i = 63; i >= 0; i--) {
+      const $tile = $('<li class="tile"></li>');
+      const pos = {x: Math.floor(i/8), y: 7 - (i % 8)};
+      $tile.data('pos', pos);
+      $tile.click(
+        this.handleClick(pos)
+      );
+
+      $tile.hover(
+        this.handleMouseEnter(pos),
+        this.handleMouseLeave()
+      );
+
+      if((pos.x + pos.y) % 2 === 0){
+        $tile.addClass('dark');
+      } else {
+        $tile.addClass('light');
+      }
+      this.tileGrid[pos.x][pos.y] = $tile;
+      this.$innerBoard.append($tile);
+    }
+  }
+
+  makeMarkers(mode) {
+    let marks;
+    let classType;
+    switch (mode){
+      case 'num':
+        marks = [8,7,6,5,4,3,2,1];
+        classType = "num";
+        break;
+      case 'alphabet':
+        marks = ["a","b","c","d","e","f","g","h"];
+        classType = "alphabet";
+        break;
+    }
+    const markDivs = marks.map( mark => $(`<div class="mark">${mark}</div>`));
+    const $markerDiv = $(`<div class="markers ${classType}"></div>`);
+    markDivs.forEach( $markDiv => $markerDiv.append($markDiv));
+    return $markerDiv;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (jChessView);
 
 
 /***/ })
