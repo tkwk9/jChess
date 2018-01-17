@@ -113,13 +113,18 @@ class jChess {
       this.turn = "black";
       $('#game-status').html("Black's Turn");
       this.board.setTurn(this.turn);
+      if (this.board.isInCheckMate("black")){
+        $('#game-status').html(`Checkmate! White wins!`);
+      }
     } else {
       this.turn = "white";
       this.board.setTurn(this.turn);
       $('#game-status').html("White's Turn");
+      if (this.board.isInCheckMate("white")){
+        $('#game-status').html(`Checkmate! Black wins!`);
+      }
     }
   }
-
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (jChess);
