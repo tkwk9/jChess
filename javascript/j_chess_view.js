@@ -50,7 +50,6 @@ class jChessView {
 
   update() {
     this.clearBoard();
-
     for (let i = 0; i < 8; i++){
       for (let j = 0; j < 8; j++){
         this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);

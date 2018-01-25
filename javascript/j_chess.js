@@ -4,9 +4,6 @@ import AI from "./AI/ai";
 class jChess {
   constructor() {
     this.board = new Board();
-    this.ai = new AI(this.board, "black");
-    // this.ai.letThereBeTree();
-    window.board = this.board;
 
     this.turn = "white";
     this.opponent = {};
@@ -16,6 +13,8 @@ class jChess {
     $('#game-status').html("White's Turn");
     this.board.setGame(this);
     this.board.setTurn(this.turn);
+    this.ai = new AI(this.board, "black");
+    // this.ai.letThereBeTree();
   }
 
   getBoard() {
@@ -23,10 +22,16 @@ class jChess {
   }
 
   changeTurns() {
-
     this.turn = this.opponent[this.turn];
     this.board.setTurn(this.turn);
-    this.evaluateGameStatus();
+    if (this.turn === "black") {
+      let move = this.ai.getMove();
+      this.board.movePiece(move[0], move[1]);
+      this.view.update();
+      this.changeTurns();
+    } else {
+      this.evaluateGameStatus();
+    }
 
   }
 

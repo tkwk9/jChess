@@ -76,7 +76,10 @@ class Board {
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
     if(starting){
       this.letThereBeGrid();
+      window.pieces = this.getPieces.bind(this);
+      window.points = this.points.bind(this);
     }
+    this.points = this.points.bind(this);
   }
 
   setGame(game) {
@@ -112,6 +115,33 @@ class Board {
   isInCheckMate(color){
     return this.getPieces(color).filter(piece =>
       piece.getValidMoves().length > 0).length <= 0;
+  }
+
+  points() {
+    // return 1000 * Math.random();
+    // return 1;
+    // const mine = [];
+    // const yours = [];
+    //
+    // this.getAllPieces().forEach(piece => {
+    //   if (piece.color === "black") {
+    //     mine.push(piece.getPoints());
+    //   } else{
+    //     yours.push(piece.getPoints());
+    //   }
+    // });
+    //
+    //
+    //
+    // const sumPoints = (array) => {
+    //   return array.reduce((acc, el) => {
+    //     return acc + el;
+    //   }, 0);
+    // };
+    //
+    return this.getAllPieces().map(piece => piece.getPoints()).reduce((acc, el) => acc + el, 0);
+    //
+    // return sumPoints(mine) + sumPoints(yours);
   }
 
   getPieces(color) {
@@ -182,6 +212,7 @@ class Board {
   movePiece(startPos, destPos) {
     const startPiece = this.getPiece(startPos);
     const destPiece = this.getPiece(destPos);
+    this.lastMove = [startPos, destPos];
     if (this.isOpponentTile(startPiece, destPos)) {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
@@ -247,6 +278,15 @@ class Board {
       }
     }
   }
+
+  // helperMethods
+  getAllPieces() {
+    let myArr = [];
+    this.piecesGrid.forEach(row => {
+      myArr = myArr.concat(row);
+    });
+    return myArr.filter((piece) => piece !== this.nullPiece);
+  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Board);
@@ -268,6 +308,7 @@ $( () => {
 
   const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
   const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.getBoard());
+  game.view = view;
 });
 
 
@@ -284,9 +325,6 @@ $( () => {
 class jChess {
   constructor() {
     this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
-    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
-    // this.ai.letThereBeTree();
-    window.board = this.board;
 
     this.turn = "white";
     this.opponent = {};
@@ -296,6 +334,8 @@ class jChess {
     $('#game-status').html("White's Turn");
     this.board.setGame(this);
     this.board.setTurn(this.turn);
+    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
+    // this.ai.letThereBeTree();
   }
 
   getBoard() {
@@ -303,10 +343,16 @@ class jChess {
   }
 
   changeTurns() {
-
     this.turn = this.opponent[this.turn];
     this.board.setTurn(this.turn);
-    this.evaluateGameStatus();
+    if (this.turn === "black") {
+      let move = this.ai.getMove();
+      this.board.movePiece(move[0], move[1]);
+      this.view.update();
+      this.changeTurns();
+    } else {
+      this.evaluateGameStatus();
+    }
 
   }
 
@@ -356,11 +402,21 @@ class Piece {
     this.color = color;
   }
 
+  updatePoints() {
+    if (this.color === "white")
+      this.pointsArray = this.pointsArray.reverse();
+  }
+
   addDirection(position, direction) {
     return {
       x: position.x + direction.x,
       y: position.y + direction.y
     };
+  }
+
+  getPoints() {
+    let points = this.pointsArray[this.position.x][this.position.y] + this.points;
+    return (this.color === "black") ? -1 * points : points;
   }
 
   getValidMoves() {
@@ -427,6 +483,17 @@ class Bishop extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265D" : "\u2657";
     this.type = "Bishop";
     this.directions = DIAGONALS;
+    this.pointsArray =[[-20,-10,-10,-10,-10,-10,-10,-20],
+                      [-10,  0,  0,  0,  0,  0,  0,-10],
+                      [-10,  0,  5, 10, 10,  5,  0,-10],
+                      [-10,  5,  5, 10, 10,  5,  5,-10],
+                      [-10,  0, 10, 10, 10, 10,  0,-10],
+                      [-10, 10, 10, 10, 10, 10, 10,-10],
+                      [-10,  5,  0,  0,  0,  0,  5,-10],
+                      [-20,-10,-10,-10,-10,-10,-10,-20]];
+    this.points = 51;
+    this.updatePoints();
+
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Bishop;
@@ -438,6 +505,18 @@ class Rook extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265C" : "\u2656";
     this.type = "Rook";
     this.directions = LINES;
+    this.pointsArray = [[0,  0,  0,  0,  0,  0,  0,  0],
+                        [5, 10, 10, 10, 10, 10, 10,  5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [0,  0,  0,  5,  5,  0,  0,  0]];
+    this.points = 55;
+
+    this.updatePoints();
+
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["g"] = Rook;
@@ -449,6 +528,18 @@ class Queen extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265B" : "\u2655";
     this.type = "Queen";
     this.directions = LINES.concat(DIAGONALS);
+    this.pointsArray = [[-20,-10,-10, -5, -5,-10,-10,-20],
+                        [-10,  0,  0,  0,  0,  0,  0,-10],
+                        [-10,  0,  5,  5,  5,  5,  0,-10],
+                        [ -5,  0,  5,  5,  5,  5,  0, -5],
+                        [  0,  0,  5,  5,  5,  5,  0, -5],
+                        [-10,  5,  5,  5,  5,  5,  0,-10],
+                        [-10,  0,  5,  0,  0,  0,  0,-10],
+                        [-20,-10,-10, -5, -5,-10,-10,-20]];
+    this.points = 100;
+
+    this.updatePoints();
+
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["f"] = Queen;
@@ -469,6 +560,17 @@ class Knight extends SteppingPiece {
       {x: -1, y:-2},
       {x: -1, y:2}
     ];
+    this.pointsArray =[[-30,-40,-30,-30,-30,-30,-40,-50],
+                      [-40,-20,  0,  0,  0,  0,-20,-40],
+                      [-30,  0, 10, 15, 15, 10,  0,-30],
+                      [-30,  5, 15, 20, 20, 15,  5,-30],
+                      [-30,  0, 15, 20, 20, 15,  0,-30],
+                      [-30,  5, 10, 15, 15, 10,  5,-30],
+                      [-40,-20,  0,  5,  5,  0,-20,-40],
+                      [-50,-40,-30,-30,-30,-30,-40,-50]];
+    this.points = 80;
+    this.updatePoints();
+
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["c"] = Knight;
@@ -480,6 +582,17 @@ class King extends SteppingPiece {
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
     this.directions = LINES.concat(DIAGONALS);
+    this.pointsArray = [[-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-20,-30,-30,-40,-40,-30,-30,-20],
+                        [-10,-20,-20,-20,-20,-20,-20,-10],
+                        [ 20, 20,  0,  0,  0,  0, 20, 20],
+                        [ 20, 30, 10,  0,  0, 10, 30, 20]];
+    this.points = 950;
+    this.updatePoints();
+
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["b"] = King;
@@ -491,6 +604,16 @@ class Pawn extends Piece {
     this.unicode = (this.color === "black") ? "\u265F" : "\u2659";
     this.startingPosition = position;
     this.type = "Pawn";
+    this.pointsArray = [[0,  0,  0,  0,  0,  0,  0,  0],
+                        [50, 50, 50, 50, 50, 50, 50, 50],
+                        [10, 10, 20, 30, 30, 20, 10, 10],
+                        [5,  5, 10, 25, 25, 10,  5,  5],
+                        [0,  0,  0, 20, 20,  0,  0,  0],
+                        [5, -5,-10,  0,  0,-10, -5,  5],
+                        [5, 10, 10,-20,-20, 10, 10,  5],
+                        [0,  0,  0,  0,  0,  0,  0,  0]];
+    this.updatePoints();
+    this.points = 30;
 
     if (color === 'black') {
       this.direction = {
@@ -572,9 +695,11 @@ class NullPiece extends Piece {
 
 class AI {
   constructor(board, color) {
+    this.aiColor = color;
     this.color = color;
     this.board = board;
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+    this.depth = 3;
   }
 
   swapColor() {
@@ -585,26 +710,147 @@ class AI {
     }
   }
 
-  letThereBeTree() {
-    this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-    this.root.data("Board", this.board);
-    this.color = "black";
-    let tempRoots = [this.root];
-
-    for (let i = 0; i < 3; i++) {
-      let newRoots = [];
-      tempRoots.forEach( tempRoot => {
-        tempRoot.data("Board").getAllMoves(this.color).forEach((dup => {
-          let tempNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-          tempNode.data("Board", dup);
-          tempRoot.appendChild(tempNode);
-        }));
-        newRoots = newRoots.concat(tempRoot.childIds.map( id => tempRoot.getChild(id)));
-      });
-      tempRoots = newRoots;
-      this.swapColor();
+  abPrune(node, depth, alpha, beta, color) {
+    let board = node.data("Board");
+    if (depth === this.depth) {
+      node.data("val", node.data("Board").points());
+      node.data("best", node);
+      return node;
     }
-    let x = 1;
+    let dups = node.data("Board").getAllMoves(color);
+    if (dups.length === 0 ) {
+      node.data("val", color === "black" ? 9999 : -9999);
+      node.data("best", node);
+      return node;
+    }
+    let val;
+    let leafNode;
+    if (color === "white"){
+      val = -9999;
+      for (let i = 0; i < dups.length; i++){
+        let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+        childNode.data("Board", dups[i]);
+        node.appendChild(childNode);
+        leafNode = this.abPrune(childNode, depth + 1, alpha, beta, "black");
+
+        if (val < leafNode.data("val")){
+          val = leafNode.data("val");
+          node.data("best", childNode);
+        }
+
+        if (val > alpha){
+          alpha = val;
+        }
+        if (beta <= alpha) break;
+      }
+    } else {
+      val = +9999;
+      for (let i = 0; i < dups.length; i++){
+        let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+        childNode.data("Board", dups[i]);
+        node.appendChild(childNode);
+        leafNode = this.abPrune(childNode, depth + 1, alpha, beta, "white");
+
+        if (val > leafNode.data("val")){
+          val = leafNode.data("val");
+          node.data("best", childNode);
+        }
+
+        if (val < beta){
+          beta = val;
+        }
+        if (beta <= alpha) break;
+      }
+    }
+    node.data("val", val);
+    return node;
+  }
+  // abPrune(node, depth, color) {
+  //   let board = node.data("Board");
+  //   if (depth === this.depth) {
+  //     node.data("val", node.data("Board").points());
+  //     node.data("best", node);
+  //     return node;
+  //   }
+  //   let dups = node.data("Board").getAllMoves(color);
+  //   if (dups.length === 0 ) {
+  //     node.data("val", node.data("Board").points());
+  //     node.data("best", node);
+  //     return node;
+  //   }
+  //   let val;
+  //   let leafNode;
+  //   if (color === "white"){
+  //     val = -9999;
+  //     for (let i = 0; i < dups.length; i++){
+  //       let childNode = new Node();
+  //       childNode.data("Board", dups[i]);
+  //       node.appendChild(childNode);
+  //       leafNode = this.abPrune(childNode, depth + 1, this.alpha, this.beta, "black");
+  //       // val = Math.max(val, leafNode.data("val"));
+  //       if (val < leafNode.data("val")){
+  //         val = leafNode.data("val");
+  //         node.data("best", childNode);
+  //       }
+  //       // this.alpha = Math.max(this.alpha, val);
+  //       if (val > this.alpha){
+  //         this.alpha = val;
+  //       }
+  //       if (this.beta <= this.alpha) break;
+  //     }
+  //   } else {
+  //     val = +9999;
+  //     for (let i = 0; i < dups.length; i++){
+  //       let childNode = new Node();
+  //       childNode.data("Board", dups[i]);
+  //       node.appendChild(childNode);
+  //       leafNode = this.abPrune(childNode, depth + 1, this.alpha, this.beta, "white");
+  //       if (val > leafNode.data("val")){
+  //         val = leafNode.data("val");
+  //         node.data("best", childNode);
+  //       }
+  //       if (val < this.beta){
+  //         this.beta = val;
+  //       }
+  //       if (this.beta <= this.alpha) break;
+  //     }
+  //   }
+  //   node.data("val", val);
+  //   return node;
+  // }
+
+  getMove() {
+    let start = Date.now();
+    this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+    this.root.data("Board", this.board).data("Points", this.board.points(this.aiColor));
+    this.color = "black";
+    this.abPrune(this.root, 0, -9999, 9999, "black");
+    // this.alpha = -9999;
+    // this.beta = 9999;
+    // this.abPrune(this.root, 0, "black");
+    // window.root = this.root;
+    // this.alpha = -9999;
+    // this.beta = 9999;
+    console.log(Date.now() - start);
+    return this.root.data("best").data("Board").lastMove;
+
+    // let tempRoots = [this.root];
+    //
+    // for (let i = 0; i < 1; i++) {
+    //   let newRoots = [];
+    //   tempRoots.forEach( tempRoot => {
+    //     tempRoot.data("Board").getAllMoves(this.color).forEach((dup => {
+    //       let tempNode = new Node();
+    //       tempNode.data("Board", dup).data("Points", dup.points(this.aiColor));
+    //       tempRoot.appendChild(tempNode);
+    //     }));
+    //     newRoots = newRoots.concat(tempRoot.childIds.map( id => tempRoot.getChild(id)));
+    //   });
+    //   tempRoots = newRoots;
+    //   this.swapColor();
+    // }
+    // this.color = this.aiColor;
+    // window.root = this.root;
   }
 }
 
@@ -2227,7 +2473,6 @@ class jChessView {
 
   update() {
     this.clearBoard();
-
     for (let i = 0; i < 8; i++){
       for (let j = 0; j < 8; j++){
         this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);

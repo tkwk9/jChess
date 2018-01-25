@@ -19,11 +19,21 @@ class Piece {
     this.color = color;
   }
 
+  updatePoints() {
+    if (this.color === "white")
+      this.pointsArray = this.pointsArray.reverse();
+  }
+
   addDirection(position, direction) {
     return {
       x: position.x + direction.x,
       y: position.y + direction.y
     };
+  }
+
+  getPoints() {
+    let points = this.pointsArray[this.position.x][this.position.y] + this.points;
+    return (this.color === "black") ? -1 * points : points;
   }
 
   getValidMoves() {
@@ -90,6 +100,17 @@ export class Bishop extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265D" : "\u2657";
     this.type = "Bishop";
     this.directions = DIAGONALS;
+    this.pointsArray =[[-20,-10,-10,-10,-10,-10,-10,-20],
+                      [-10,  0,  0,  0,  0,  0,  0,-10],
+                      [-10,  0,  5, 10, 10,  5,  0,-10],
+                      [-10,  5,  5, 10, 10,  5,  5,-10],
+                      [-10,  0, 10, 10, 10, 10,  0,-10],
+                      [-10, 10, 10, 10, 10, 10, 10,-10],
+                      [-10,  5,  0,  0,  0,  0,  5,-10],
+                      [-20,-10,-10,-10,-10,-10,-10,-20]];
+    this.points = 51;
+    this.updatePoints();
+
   }
 }
 
@@ -99,6 +120,18 @@ export class Rook extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265C" : "\u2656";
     this.type = "Rook";
     this.directions = LINES;
+    this.pointsArray = [[0,  0,  0,  0,  0,  0,  0,  0],
+                        [5, 10, 10, 10, 10, 10, 10,  5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [-5,  0,  0,  0,  0,  0,  0, -5],
+                        [0,  0,  0,  5,  5,  0,  0,  0]];
+    this.points = 55;
+
+    this.updatePoints();
+
   }
 }
 
@@ -108,6 +141,18 @@ export class Queen extends SlidingPiece {
     this.unicode = (this.color === "black") ? "\u265B" : "\u2655";
     this.type = "Queen";
     this.directions = LINES.concat(DIAGONALS);
+    this.pointsArray = [[-20,-10,-10, -5, -5,-10,-10,-20],
+                        [-10,  0,  0,  0,  0,  0,  0,-10],
+                        [-10,  0,  5,  5,  5,  5,  0,-10],
+                        [ -5,  0,  5,  5,  5,  5,  0, -5],
+                        [  0,  0,  5,  5,  5,  5,  0, -5],
+                        [-10,  5,  5,  5,  5,  5,  0,-10],
+                        [-10,  0,  5,  0,  0,  0,  0,-10],
+                        [-20,-10,-10, -5, -5,-10,-10,-20]];
+    this.points = 100;
+
+    this.updatePoints();
+
   }
 }
 
@@ -126,6 +171,17 @@ export class Knight extends SteppingPiece {
       {x: -1, y:-2},
       {x: -1, y:2}
     ];
+    this.pointsArray =[[-30,-40,-30,-30,-30,-30,-40,-50],
+                      [-40,-20,  0,  0,  0,  0,-20,-40],
+                      [-30,  0, 10, 15, 15, 10,  0,-30],
+                      [-30,  5, 15, 20, 20, 15,  5,-30],
+                      [-30,  0, 15, 20, 20, 15,  0,-30],
+                      [-30,  5, 10, 15, 15, 10,  5,-30],
+                      [-40,-20,  0,  5,  5,  0,-20,-40],
+                      [-50,-40,-30,-30,-30,-30,-40,-50]];
+    this.points = 80;
+    this.updatePoints();
+
   }
 }
 
@@ -135,6 +191,17 @@ export class King extends SteppingPiece {
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
     this.directions = LINES.concat(DIAGONALS);
+    this.pointsArray = [[-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-30,-40,-40,-50,-50,-40,-40,-30],
+                        [-20,-30,-30,-40,-40,-30,-30,-20],
+                        [-10,-20,-20,-20,-20,-20,-20,-10],
+                        [ 20, 20,  0,  0,  0,  0, 20, 20],
+                        [ 20, 30, 10,  0,  0, 10, 30, 20]];
+    this.points = 950;
+    this.updatePoints();
+
   }
 }
 
@@ -144,6 +211,16 @@ export class Pawn extends Piece {
     this.unicode = (this.color === "black") ? "\u265F" : "\u2659";
     this.startingPosition = position;
     this.type = "Pawn";
+    this.pointsArray = [[0,  0,  0,  0,  0,  0,  0,  0],
+                        [50, 50, 50, 50, 50, 50, 50, 50],
+                        [10, 10, 20, 30, 30, 20, 10, 10],
+                        [5,  5, 10, 25, 25, 10,  5,  5],
+                        [0,  0,  0, 20, 20,  0,  0,  0],
+                        [5, -5,-10,  0,  0,-10, -5,  5],
+                        [5, 10, 10,-20,-20, 10, 10,  5],
+                        [0,  0,  0,  0,  0,  0,  0,  0]];
+    this.updatePoints();
+    this.points = 30;
 
     if (color === 'black') {
       this.direction = {

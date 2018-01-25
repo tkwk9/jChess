@@ -5,7 +5,10 @@ class Board {
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
     if(starting){
       this.letThereBeGrid();
+      window.pieces = this.getPieces.bind(this);
+      window.points = this.points.bind(this);
     }
+    this.points = this.points.bind(this);
   }
 
   setGame(game) {
@@ -41,6 +44,33 @@ class Board {
   isInCheckMate(color){
     return this.getPieces(color).filter(piece =>
       piece.getValidMoves().length > 0).length <= 0;
+  }
+
+  points() {
+    // return 1000 * Math.random();
+    // return 1;
+    // const mine = [];
+    // const yours = [];
+    //
+    // this.getAllPieces().forEach(piece => {
+    //   if (piece.color === "black") {
+    //     mine.push(piece.getPoints());
+    //   } else{
+    //     yours.push(piece.getPoints());
+    //   }
+    // });
+    //
+    //
+    //
+    // const sumPoints = (array) => {
+    //   return array.reduce((acc, el) => {
+    //     return acc + el;
+    //   }, 0);
+    // };
+    //
+    return this.getAllPieces().map(piece => piece.getPoints()).reduce((acc, el) => acc + el, 0);
+    //
+    // return sumPoints(mine) + sumPoints(yours);
   }
 
   getPieces(color) {
@@ -111,6 +141,7 @@ class Board {
   movePiece(startPos, destPos) {
     const startPiece = this.getPiece(startPos);
     const destPiece = this.getPiece(destPos);
+    this.lastMove = [startPos, destPos];
     if (this.isOpponentTile(startPiece, destPos)) {
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
@@ -175,6 +206,15 @@ class Board {
         }
       }
     }
+  }
+
+  // helperMethods
+  getAllPieces() {
+    let myArr = [];
+    this.piecesGrid.forEach(row => {
+      myArr = myArr.concat(row);
+    });
+    return myArr.filter((piece) => piece !== this.nullPiece);
   }
 }
 

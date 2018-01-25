@@ -6,4 +6,5 @@ $( () => {
 
   const game = new jChess();
   const view = new jChessView($mainDiv, game, game.getBoard());
+  game.view = view;
 });
