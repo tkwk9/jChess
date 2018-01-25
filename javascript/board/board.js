@@ -3,6 +3,7 @@ import * as Piece from "./piece";
 class Board {
   constructor(starting = true){
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
+    this.isRealBoard = starting;
     if(starting){
       this.letThereBeGrid();
       window.pieces = this.getPieces.bind(this);
@@ -13,10 +14,7 @@ class Board {
 
   setGame(game) {
     this.game = game;
-  }
-
-  setTurn(turn) {
-    this.turn = turn;
+    this.turn = game.turn;
   }
 
   dup() {
@@ -47,30 +45,7 @@ class Board {
   }
 
   points() {
-    // return 1000 * Math.random();
-    // return 1;
-    // const mine = [];
-    // const yours = [];
-    //
-    // this.getAllPieces().forEach(piece => {
-    //   if (piece.color === "black") {
-    //     mine.push(piece.getPoints());
-    //   } else{
-    //     yours.push(piece.getPoints());
-    //   }
-    // });
-    //
-    //
-    //
-    // const sumPoints = (array) => {
-    //   return array.reduce((acc, el) => {
-    //     return acc + el;
-    //   }, 0);
-    // };
-    //
     return this.getAllPieces().map(piece => piece.getPoints()).reduce((acc, el) => acc + el, 0);
-    //
-    // return sumPoints(mine) + sumPoints(yours);
   }
 
   getPieces(color) {
@@ -115,9 +90,12 @@ class Board {
     let duplications = [];
     pieces.forEach( piece => {
       piece.getValidMoves().forEach( move => {
-        let dup = this.dup();
-        dup.movePiece(piece.position, move);
-        duplications.push(dup);
+        let dupFunction = () => {
+          let dup = this.dup();
+          dup.movePiece(piece.position, move);
+          return dup;
+        };
+        duplications.push(dupFunction);
       });
     });
     return duplications;
@@ -142,7 +120,9 @@ class Board {
     const startPiece = this.getPiece(startPos);
     const destPiece = this.getPiece(destPos);
     this.lastMove = [startPos, destPos];
-    if (this.isOpponentTile(startPiece, destPos)) {
+    if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
+      $(`.captures.${destPiece.color}`).
+        append(`<div class="captured">${destPiece.unicode}</div>`);
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     } else {

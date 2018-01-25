@@ -74,6 +74,7 @@
 class Board {
   constructor(starting = true){
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
+    this.isRealBoard = starting;
     if(starting){
       this.letThereBeGrid();
       window.pieces = this.getPieces.bind(this);
@@ -84,10 +85,7 @@ class Board {
 
   setGame(game) {
     this.game = game;
-  }
-
-  setTurn(turn) {
-    this.turn = turn;
+    this.turn = game.turn;
   }
 
   dup() {
@@ -118,30 +116,7 @@ class Board {
   }
 
   points() {
-    // return 1000 * Math.random();
-    // return 1;
-    // const mine = [];
-    // const yours = [];
-    //
-    // this.getAllPieces().forEach(piece => {
-    //   if (piece.color === "black") {
-    //     mine.push(piece.getPoints());
-    //   } else{
-    //     yours.push(piece.getPoints());
-    //   }
-    // });
-    //
-    //
-    //
-    // const sumPoints = (array) => {
-    //   return array.reduce((acc, el) => {
-    //     return acc + el;
-    //   }, 0);
-    // };
-    //
     return this.getAllPieces().map(piece => piece.getPoints()).reduce((acc, el) => acc + el, 0);
-    //
-    // return sumPoints(mine) + sumPoints(yours);
   }
 
   getPieces(color) {
@@ -186,9 +161,12 @@ class Board {
     let duplications = [];
     pieces.forEach( piece => {
       piece.getValidMoves().forEach( move => {
-        let dup = this.dup();
-        dup.movePiece(piece.position, move);
-        duplications.push(dup);
+        let dupFunction = () => {
+          let dup = this.dup();
+          dup.movePiece(piece.position, move);
+          return dup;
+        };
+        duplications.push(dupFunction);
       });
     });
     return duplications;
@@ -213,7 +191,9 @@ class Board {
     const startPiece = this.getPiece(startPos);
     const destPiece = this.getPiece(destPos);
     this.lastMove = [startPos, destPos];
-    if (this.isOpponentTile(startPiece, destPos)) {
+    if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
+      $(`.captures.${destPiece.color}`).
+        append(`<div class="captured">${destPiece.unicode}</div>`);
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     } else {
@@ -305,9 +285,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 $( () => {
   const $mainDiv = $('#j-chess');
-
   const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
-  const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.getBoard());
+  const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.board);
   game.view = view;
 });
 
@@ -331,42 +310,58 @@ class jChess {
     this.opponent["black"] = "white";
     this.opponent["white"] = "black";
 
-    $('#game-status').html("White's Turn");
     this.board.setGame(this);
-    this.board.setTurn(this.turn);
+    this.evaluateGameStatus();
     this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
-    // this.ai.letThereBeTree();
-  }
-
-  getBoard() {
-    return this.board;
   }
 
   changeTurns() {
     this.turn = this.opponent[this.turn];
-    this.board.setTurn(this.turn);
+    this.board.turn = this.turn;
+    this.evaluateGameStatus();
     if (this.turn === "black") {
-      let move = this.ai.getMove();
-      this.board.movePiece(move[0], move[1]);
-      this.view.update();
-      this.changeTurns();
-    } else {
-      this.evaluateGameStatus();
-    }
 
+      setTimeout(this.fetchMoves.bind(this), 500);
+    }
+  }
+
+  fetchMoves() {
+    let move = this.ai.getMove();
+    this.board.movePiece(move[0], move[1]);
+    this.view.setAiMove(move[0], move[1]);
+    this.view.update();
+    this.changeTurns();
   }
 
   evaluateGameStatus() {
+    let msg;
     if (this.board.isInCheckMate(this.turn)){
-      const winner = this.opponent[this.turn].charAt(0).toUpperCase() +
-        this.opponent[this.turn].slice(1);
-      $('#game-status').html(`Checkmate! ${winner} wins!`);
+      msg = this.opponent[this.turn] === "black" ?
+        "Checkmate! Computer wins!" :
+        "Checkmate! You win!";
     } else if (this.board.isInCheck(this.turn)) {
-      $('#game-status').html("Check!");
+      msg = this.turn === "black" ?
+        "Computer is in check!" :
+        "Check!";
     } else {
-      const player = this.turn.charAt(0).toUpperCase() +
-        this.turn.slice(1);
-      $('#game-status').html(`${player}'s turn'`);
+      msg = this.turn === "black" ?
+        "Computer is thinking..." : "Your turn";
+    }
+    $('#game-status').empty();
+    $('#game-status').html(msg);
+    if (this.turn === "black"){
+      $('#game-status').append($(
+        "<div class='sk-cube-grid'>" +
+        "<div class='sk-cube sk-cube1'></div>" +
+        "<div class='sk-cube sk-cube2'></div>" +
+        "<div class='sk-cube sk-cube3'></div>" +
+        "<div class='sk-cube sk-cube4'></div>" +
+        "<div class='sk-cube sk-cube5'></div>" +
+        "<div class='sk-cube sk-cube6'></div>" +
+        "<div class='sk-cube sk-cube7'></div>" +
+        "<div class='sk-cube sk-cube8'></div>" +
+        "<div class='sk-cube sk-cube9'></div>" +
+        "</div>"));
     }
   }
 
@@ -712,15 +707,14 @@ class AI {
 
   abPrune(node, depth, alpha, beta, color) {
     let board = node.data("Board");
+    node.data("best", node);
     if (depth === this.depth) {
       node.data("val", node.data("Board").points());
-      node.data("best", node);
       return node;
     }
     let dups = node.data("Board").getAllMoves(color);
     if (dups.length === 0 ) {
       node.data("val", color === "black" ? 9999 : -9999);
-      node.data("best", node);
       return node;
     }
     let val;
@@ -729,7 +723,9 @@ class AI {
       val = -9999;
       for (let i = 0; i < dups.length; i++){
         let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-        childNode.data("Board", dups[i]);
+        let dup = dups[i]();
+        // childNode.data("Board", dups[i]);
+        childNode.data("Board", dup);
         node.appendChild(childNode);
         leafNode = this.abPrune(childNode, depth + 1, alpha, beta, "black");
 
@@ -747,7 +743,8 @@ class AI {
       val = +9999;
       for (let i = 0; i < dups.length; i++){
         let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-        childNode.data("Board", dups[i]);
+        let dup = dups[i]();
+        childNode.data("Board", dup);
         node.appendChild(childNode);
         leafNode = this.abPrune(childNode, depth + 1, alpha, beta, "white");
 
@@ -765,59 +762,7 @@ class AI {
     node.data("val", val);
     return node;
   }
-  // abPrune(node, depth, color) {
-  //   let board = node.data("Board");
-  //   if (depth === this.depth) {
-  //     node.data("val", node.data("Board").points());
-  //     node.data("best", node);
-  //     return node;
-  //   }
-  //   let dups = node.data("Board").getAllMoves(color);
-  //   if (dups.length === 0 ) {
-  //     node.data("val", node.data("Board").points());
-  //     node.data("best", node);
-  //     return node;
-  //   }
-  //   let val;
-  //   let leafNode;
-  //   if (color === "white"){
-  //     val = -9999;
-  //     for (let i = 0; i < dups.length; i++){
-  //       let childNode = new Node();
-  //       childNode.data("Board", dups[i]);
-  //       node.appendChild(childNode);
-  //       leafNode = this.abPrune(childNode, depth + 1, this.alpha, this.beta, "black");
-  //       // val = Math.max(val, leafNode.data("val"));
-  //       if (val < leafNode.data("val")){
-  //         val = leafNode.data("val");
-  //         node.data("best", childNode);
-  //       }
-  //       // this.alpha = Math.max(this.alpha, val);
-  //       if (val > this.alpha){
-  //         this.alpha = val;
-  //       }
-  //       if (this.beta <= this.alpha) break;
-  //     }
-  //   } else {
-  //     val = +9999;
-  //     for (let i = 0; i < dups.length; i++){
-  //       let childNode = new Node();
-  //       childNode.data("Board", dups[i]);
-  //       node.appendChild(childNode);
-  //       leafNode = this.abPrune(childNode, depth + 1, this.alpha, this.beta, "white");
-  //       if (val > leafNode.data("val")){
-  //         val = leafNode.data("val");
-  //         node.data("best", childNode);
-  //       }
-  //       if (val < this.beta){
-  //         this.beta = val;
-  //       }
-  //       if (this.beta <= this.alpha) break;
-  //     }
-  //   }
-  //   node.data("val", val);
-  //   return node;
-  // }
+
 
   getMove() {
     let start = Date.now();
@@ -825,32 +770,8 @@ class AI {
     this.root.data("Board", this.board).data("Points", this.board.points(this.aiColor));
     this.color = "black";
     this.abPrune(this.root, 0, -9999, 9999, "black");
-    // this.alpha = -9999;
-    // this.beta = 9999;
-    // this.abPrune(this.root, 0, "black");
-    // window.root = this.root;
-    // this.alpha = -9999;
-    // this.beta = 9999;
     console.log(Date.now() - start);
     return this.root.data("best").data("Board").lastMove;
-
-    // let tempRoots = [this.root];
-    //
-    // for (let i = 0; i < 1; i++) {
-    //   let newRoots = [];
-    //   tempRoots.forEach( tempRoot => {
-    //     tempRoot.data("Board").getAllMoves(this.color).forEach((dup => {
-    //       let tempNode = new Node();
-    //       tempNode.data("Board", dup).data("Points", dup.points(this.aiColor));
-    //       tempRoot.appendChild(tempNode);
-    //     }));
-    //     newRoots = newRoots.concat(tempRoot.childIds.map( id => tempRoot.getChild(id)));
-    //   });
-    //   tempRoots = newRoots;
-    //   this.swapColor();
-    // }
-    // this.color = this.aiColor;
-    // window.root = this.root;
   }
 }
 
@@ -2433,6 +2354,8 @@ class jChessView {
     this.moves = [];
     this.p1Hover = undefined;
     this.p2Hover = undefined;
+    this.aiStart = undefined;
+    this.aiDest = undefined;
     this.setupMarkers();
     this.setupBoard();
     this.update();
@@ -2445,6 +2368,16 @@ class jChessView {
   isInMoves(pos){
     return this.moves.filter( move => move.x === pos.x &&
       move.y === pos.y).length > 0;
+  }
+
+  setAiMove(startPos, endPos) {
+    this.aiStart = startPos;
+    this.aiDest = endPos;
+  }
+
+  removeAiMoves() {
+    this.aiStart = undefined;
+    this.aiDest = undefined;
   }
 
   showMoves(pos) {
@@ -2466,6 +2399,8 @@ class jChessView {
         tile.removeClass('path');
         tile.removeClass('p1-hover');
         tile.removeClass('p2-hover');
+        tile.removeClass('ai-start');
+        tile.removeClass('ai-dest');
         tile.empty();
       });
     });
@@ -2478,10 +2413,15 @@ class jChessView {
         this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);
       }
     }
-
     this.moves.forEach((move) => {
       this.getTile(move).addClass('path');
     });
+    if (this.aiStart) {
+      this.getTile(this.aiStart).addClass('ai-start');
+    }
+    if (this.aiDest) {
+      this.getTile(this.aiDest).addClass('ai-dest');
+    }
     if (this.p1Hover) {
       this.getTile(this.p1Hover).addClass('p1-hover');
     }
@@ -2495,9 +2435,10 @@ class jChessView {
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);
-          this.game.changeTurns();
           this.removeMoves();
+          this.removeAiMoves();
           this.update();
+          setTimeout(this.game.changeTurns.bind(this.game), 0);
         } else {
           this.removeMoves();
           this.update();
@@ -2547,11 +2488,12 @@ class jChessView {
     this.$outerBoard.append(this.makeMarkers("num").addClass("flipped"));
     this.$outerBoard.append(this.makeMarkers("alphabet"));
 
+    this.$mainDiv.append($("<div class='captures white'></div>"));
     this.$mainDiv.append(this.$outerBoard);
+    this.$mainDiv.append($("<div class='captures black'></div>"));
   }
 
   setupBoard() {
-
     for (let i = 63; i >= 0; i--) {
       const $tile = $('<li class="tile"></li>');
       const pos = {x: Math.floor(i/8), y: 7 - (i % 8)};

@@ -10,6 +10,8 @@ class jChessView {
     this.moves = [];
     this.p1Hover = undefined;
     this.p2Hover = undefined;
+    this.aiStart = undefined;
+    this.aiDest = undefined;
     this.setupMarkers();
     this.setupBoard();
     this.update();
@@ -22,6 +24,16 @@ class jChessView {
   isInMoves(pos){
     return this.moves.filter( move => move.x === pos.x &&
       move.y === pos.y).length > 0;
+  }
+
+  setAiMove(startPos, endPos) {
+    this.aiStart = startPos;
+    this.aiDest = endPos;
+  }
+
+  removeAiMoves() {
+    this.aiStart = undefined;
+    this.aiDest = undefined;
   }
 
   showMoves(pos) {
@@ -43,6 +55,8 @@ class jChessView {
         tile.removeClass('path');
         tile.removeClass('p1-hover');
         tile.removeClass('p2-hover');
+        tile.removeClass('ai-start');
+        tile.removeClass('ai-dest');
         tile.empty();
       });
     });
@@ -55,10 +69,15 @@ class jChessView {
         this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);
       }
     }
-
     this.moves.forEach((move) => {
       this.getTile(move).addClass('path');
     });
+    if (this.aiStart) {
+      this.getTile(this.aiStart).addClass('ai-start');
+    }
+    if (this.aiDest) {
+      this.getTile(this.aiDest).addClass('ai-dest');
+    }
     if (this.p1Hover) {
       this.getTile(this.p1Hover).addClass('p1-hover');
     }
@@ -72,9 +91,10 @@ class jChessView {
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);
-          this.game.changeTurns();
           this.removeMoves();
+          this.removeAiMoves();
           this.update();
+          setTimeout(this.game.changeTurns.bind(this.game), 0);
         } else {
           this.removeMoves();
           this.update();
@@ -124,11 +144,12 @@ class jChessView {
     this.$outerBoard.append(this.makeMarkers("num").addClass("flipped"));
     this.$outerBoard.append(this.makeMarkers("alphabet"));
 
+    this.$mainDiv.append($("<div class='captures white'></div>"));
     this.$mainDiv.append(this.$outerBoard);
+    this.$mainDiv.append($("<div class='captures black'></div>"));
   }
 
   setupBoard() {
-
     for (let i = 63; i >= 0; i--) {
       const $tile = $('<li class="tile"></li>');
       const pos = {x: Math.floor(i/8), y: 7 - (i % 8)};

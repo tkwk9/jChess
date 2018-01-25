@@ -10,42 +10,58 @@ class jChess {
     this.opponent["black"] = "white";
     this.opponent["white"] = "black";
 
-    $('#game-status').html("White's Turn");
     this.board.setGame(this);
-    this.board.setTurn(this.turn);
+    this.evaluateGameStatus();
     this.ai = new AI(this.board, "black");
-    // this.ai.letThereBeTree();
-  }
-
-  getBoard() {
-    return this.board;
   }
 
   changeTurns() {
     this.turn = this.opponent[this.turn];
-    this.board.setTurn(this.turn);
+    this.board.turn = this.turn;
+    this.evaluateGameStatus();
     if (this.turn === "black") {
-      let move = this.ai.getMove();
-      this.board.movePiece(move[0], move[1]);
-      this.view.update();
-      this.changeTurns();
-    } else {
-      this.evaluateGameStatus();
-    }
 
+      setTimeout(this.fetchMoves.bind(this), 500);
+    }
+  }
+
+  fetchMoves() {
+    let move = this.ai.getMove();
+    this.board.movePiece(move[0], move[1]);
+    this.view.setAiMove(move[0], move[1]);
+    this.view.update();
+    this.changeTurns();
   }
 
   evaluateGameStatus() {
+    let msg;
     if (this.board.isInCheckMate(this.turn)){
-      const winner = this.opponent[this.turn].charAt(0).toUpperCase() +
-        this.opponent[this.turn].slice(1);
-      $('#game-status').html(`Checkmate! ${winner} wins!`);
+      msg = this.opponent[this.turn] === "black" ?
+        "Checkmate! Computer wins!" :
+        "Checkmate! You win!";
     } else if (this.board.isInCheck(this.turn)) {
-      $('#game-status').html("Check!");
+      msg = this.turn === "black" ?
+        "Computer is in check!" :
+        "Check!";
     } else {
-      const player = this.turn.charAt(0).toUpperCase() +
-        this.turn.slice(1);
-      $('#game-status').html(`${player}'s turn'`);
+      msg = this.turn === "black" ?
+        "Computer is thinking..." : "Your turn";
+    }
+    $('#game-status').empty();
+    $('#game-status').html(msg);
+    if (this.turn === "black"){
+      $('#game-status').append($(
+        "<div class='sk-cube-grid'>" +
+        "<div class='sk-cube sk-cube1'></div>" +
+        "<div class='sk-cube sk-cube2'></div>" +
+        "<div class='sk-cube sk-cube3'></div>" +
+        "<div class='sk-cube sk-cube4'></div>" +
+        "<div class='sk-cube sk-cube5'></div>" +
+        "<div class='sk-cube sk-cube6'></div>" +
+        "<div class='sk-cube sk-cube7'></div>" +
+        "<div class='sk-cube sk-cube8'></div>" +
+        "<div class='sk-cube sk-cube9'></div>" +
+        "</div>"));
     }
   }
 
