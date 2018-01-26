@@ -10,6 +10,7 @@ class Board {
       window.points = this.points.bind(this);
     }
     this.points = this.points.bind(this);
+    this.deathCount = 0;
   }
 
   setGame(game) {
@@ -100,6 +101,8 @@ class Board {
         pump = piece.pumpValidMove();
         move = pump();
       }
+      return move;
+    };
       // if (move === undefined) { //out of moves
       // }
       // if (ev === false) {
@@ -107,8 +110,6 @@ class Board {
       // }
       // let dup = this.dup();
       // dup.movePiece(piece.position, ev);
-      return move;
-    };
     // let arr = this.getPieces(color);
     // let piece;
     // arr.unshift(false);
@@ -188,6 +189,10 @@ class Board {
     if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
       $(`.captures.${destPiece.color}`).
         append(`<div class="captured">${destPiece.unicode}</div>`);
+      // this.deathCount += 1;
+      // if (this.deathCount === 16) {
+      //   this.game.ai.depth = 4;
+      // }
       this.placePiece(startPiece, destPos);
       this.placePiece(this.nullPiece, startPos);
     } else {
