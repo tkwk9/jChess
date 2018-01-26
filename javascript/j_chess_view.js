@@ -88,6 +88,7 @@ class jChessView {
 
   handleClick(pos) {
     return () => {
+      console.log(pos);
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);

@@ -27,9 +27,8 @@ class AI {
 
     // Basecases
     if (depth === this.depth ||
-    // if (depth === this.depth ||
-    //   ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
-    //   ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
+      // ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
+      // ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
       (this.nodeCount > 30000)
     ) { // if leaf node
       if (board.isInCheckMate()) {

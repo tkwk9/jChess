@@ -82,6 +82,10 @@ class Board {
     }
     this.points = this.points.bind(this);
     this.deathCount = 0;
+    this.inCheck = {
+      "black": false,
+      "white": false
+    };
   }
 
   setGame(game) {
@@ -150,10 +154,12 @@ class Board {
       let moves = pieces[i].getMoves();
       for (let j = 0; j < moves.length; j++){
         if (moves[j].x === king.position.x && moves[j].y === king.position.y){
+          this.inCheck[color] = true;
           return true;
         }
       }
     }
+    this.inCheck[color] = false;
     return false;
   }
 
@@ -174,53 +180,7 @@ class Board {
       }
       return move;
     };
-      // if (move === undefined) { //out of moves
-      // }
-      // if (ev === false) {
-      //   return false;
-      // }
-      // let dup = this.dup();
-      // dup.movePiece(piece.position, ev);
-    // let arr = this.getPieces(color);
-    // let piece;
-    // arr.unshift(false);
-    // return () => {
-    //   let ev = arr.pop();
-    //   while (ev.isPiece) {
-    //     piece = ev;
-    //     arr = arr.concat(ev.getValidMoves());
-    //     ev = arr.pop();
-    //   }
-    //   if (ev === false) {
-    //     return false;
-    //   }
-    //   let dup = this.dup();
-    //   dup.movePiece(piece.position, ev);
-    //   return dup;
-    // };
   }
-
-  // genMoves(color) {
-  //   let pieces = this.getPieces(color);
-  //   let length = pieces.length;
-  //   let i = 1;
-  //   let j = 1;
-  //   let movesList = pieces[0].getValidMoves();
-  //   return () => {
-  //     if (j < movesList.length){ // Iterating over moves
-  //       let move = pieces[j];
-  //       j += 1;
-  //       return move;
-  //     } else { // Need new moves list
-  //       if (i < length) {
-  //         movesList = pieces[i].getValidMoves();
-  //         let move = movesList[0];
-  //       } else {
-  //
-  //       }
-  //     }
-  //   };
-  // }
 
   getAllMoves(color) {
     let pieces = this.getPieces(color);
@@ -256,20 +216,60 @@ class Board {
   movePiece(startPos, destPos) {
     const startPiece = this.getPiece(startPos);
     const destPiece = this.getPiece(destPos);
-    this.lastMove = [startPos, destPos];
-    if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
-      $(`.captures.${destPiece.color}`).
-        append(`<div class="captured">${destPiece.unicode}</div>`);
-      // this.deathCount += 1;
-      // if (this.deathCount === 16) {
-      //   this.game.ai.depth = 4;
-      // }
-      this.placePiece(startPiece, destPos);
-      this.placePiece(this.nullPiece, startPos);
-    } else {
-      this.placePiece(startPiece, destPos);
-      this.placePiece(this.nullPiece, startPos);
+
+    if (startPos.x === 0) {
+      if (startPos.y === 0) {
+        this.whiteKing.castleLeft = false;
+      } else if (startPos.y === 4) {
+        this.whiteKing.castleLeft = false;
+        this.whiteKing.castleRight = false;
+      } else if (startPos.y === 7) {
+        this.whiteKing.castleRight = false;
+      }
+    } else if (startPos.x === 7) {
+      if (startPos.y === 0) {
+        this.blackKing.castleLeft = false;
+      } else if (startPos.y === 4) {
+        this.blackKing.castleLeft = false;
+        this.blackKing.castleRight = false;
+      } else if (startPos.y === 7) {
+        this.blackKing.castleRight = false;
+      }
     }
+
+    if (
+      (startPos.x === 0 || startPos.x === 7) &&
+      startPos.y === 4 &&
+      (destPos.x === 0 || destPos.x === 7) &&
+      startPiece.type === "King"
+    ) {
+      if (destPos.y === 6) {
+        this.movePiece({x: startPos.x, y: 7}, {x: startPos.x, y: 5});
+      } else if (destPos.y === 1) {
+        this.movePiece({x: startPos.x, y: 0}, {x: startPos.x, y: 2});
+      }
+    }
+
+    if (
+      (startPos.x === 1 || startPos.x === 6) &&
+      (destPos.x === 0 || destPos.x === 7) &&
+      startPiece.type === "Pawn"
+    ) {
+      this.placePiece(this.nullPiece, startPos);
+      this.placePiece(new __WEBPACK_IMPORTED_MODULE_0__piece__["f" /* Queen */](destPos, this, this.turn), destPos);
+    } else {
+      this.lastMove = [startPos, destPos];
+      if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
+        $(`.captures.${destPiece.color}`).
+        append(`<div class="captured">${destPiece.unicode}</div>`);
+        this.placePiece(startPiece, destPos);
+        this.placePiece(this.nullPiece, startPos);
+      } else {
+        this.placePiece(startPiece, destPos);
+        this.placePiece(this.nullPiece, startPos);
+      }
+    }
+
   }
 
   removePiece(pos) {
@@ -670,6 +670,10 @@ class King extends SteppingPiece {
     super(...args);
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
+
+    this.castleLeft = {x: 0, y: -3};
+    this.castleRight = {x: 0, y: 2};
+
     this.directions = LINES.concat(DIAGONALS);
     this.pointsArray = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -681,6 +685,47 @@ class King extends SteppingPiece {
                         [ 20, 30, 10,  0,  0, 10, 30, 20]];
     this.points = 950;
     this.updatePoints();
+
+  }
+
+  dup(board) {
+    let copy = new this.constructor(this.position, board, this.color);
+    copy.startingPosition = this.startingPosition;
+    copy.castleLeft = this.castleLeft;
+    copy.castleRight = this.castleRight;
+    return copy;
+  }
+
+  getMoves() {
+    let allMoves = [];
+
+    let directions = this.directions.slice();
+    if (!this.board.inCheck[this.color]){
+      if (this.castleLeft &&
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: -1})
+        ) === this.board.nullPiece ||
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: -2})
+        ) === this.board.nullPiece
+      ) directions.push(this.castleLeft);
+      if (this.castleRight &&
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: 1})
+        ) === this.board.nullPiece
+      ) directions.push(this.castleRight);
+    }
+
+    directions.forEach(direction => {
+      let tempPos = this.addDirection(this.position, direction);
+      if (this.board.isInBound(tempPos) &&
+        (this.board.isEmptyTile(tempPos) ||
+          this.board.isOpponentTile(this, tempPos))) {
+        allMoves.push(tempPos);
+      }
+    });
+
+    return allMoves;
 
   }
 }
@@ -809,9 +854,8 @@ class AI {
 
     // Basecases
     if (depth === this.depth ||
-    // if (depth === this.depth ||
-    //   ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
-    //   ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
+      // ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
+      // ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
       (this.nodeCount > 30000)
     ) { // if leaf node
       if (board.isInCheckMate()) {
@@ -2565,6 +2609,7 @@ class jChessView {
 
   handleClick(pos) {
     return () => {
+      console.log(pos);
       if (this.startPos) {
         if(this.isInMoves(pos)){
           this.board.movePiece(this.startPos, pos);

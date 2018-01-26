@@ -214,6 +214,10 @@ export class King extends SteppingPiece {
     super(...args);
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
+
+    this.castleLeft = {x: 0, y: -3};
+    this.castleRight = {x: 0, y: 2};
+
     this.directions = LINES.concat(DIAGONALS);
     this.pointsArray = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -225,6 +229,47 @@ export class King extends SteppingPiece {
                         [ 20, 30, 10,  0,  0, 10, 30, 20]];
     this.points = 950;
     this.updatePoints();
+
+  }
+
+  dup(board) {
+    let copy = new this.constructor(this.position, board, this.color);
+    copy.startingPosition = this.startingPosition;
+    copy.castleLeft = this.castleLeft;
+    copy.castleRight = this.castleRight;
+    return copy;
+  }
+
+  getMoves() {
+    let allMoves = [];
+
+    let directions = this.directions.slice();
+    if (!this.board.inCheck[this.color]){
+      if (this.castleLeft &&
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: -1})
+        ) === this.board.nullPiece ||
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: -2})
+        ) === this.board.nullPiece
+      ) directions.push(this.castleLeft);
+      if (this.castleRight &&
+        this.board.getPiece(
+          this.addDirection(this.position, {x: 0, y: 1})
+        ) === this.board.nullPiece
+      ) directions.push(this.castleRight);
+    }
+
+    directions.forEach(direction => {
+      let tempPos = this.addDirection(this.position, direction);
+      if (this.board.isInBound(tempPos) &&
+        (this.board.isEmptyTile(tempPos) ||
+          this.board.isOpponentTile(this, tempPos))) {
+        allMoves.push(tempPos);
+      }
+    });
+
+    return allMoves;
 
   }
 }
