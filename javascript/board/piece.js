@@ -17,6 +17,7 @@ class Piece {
     this.position = position;
     this.board = board;
     this.color = color;
+    this.isPiece = true;
   }
 
   updatePoints() {

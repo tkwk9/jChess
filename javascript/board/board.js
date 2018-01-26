@@ -85,6 +85,48 @@ class Board {
     return false;
   }
 
+  pumpMoves(color) {
+    let arr = this.getPieces(color);
+    let piece;
+    arr.unshift(false);
+    return () => {
+      let ev = arr.pop();
+      while (ev.isPiece) {
+        piece = ev;
+        arr = arr.concat(ev.getValidMoves());
+        ev = arr.pop();
+      }
+      if (ev === false) {
+        return false;
+      }
+      let dup = this.dup();
+      dup.movePiece(piece.position, ev);
+      return dup;
+    };
+  }
+
+  // genMoves(color) {
+  //   let pieces = this.getPieces(color);
+  //   let length = pieces.length;
+  //   let i = 1;
+  //   let j = 1;
+  //   let movesList = pieces[0].getValidMoves();
+  //   return () => {
+  //     if (j < movesList.length){ // Iterating over moves
+  //       let move = pieces[j];
+  //       j += 1;
+  //       return move;
+  //     } else { // Need new moves list
+  //       if (i < length) {
+  //         movesList = pieces[i].getValidMoves();
+  //         let move = movesList[0];
+  //       } else {
+  //
+  //       }
+  //     }
+  //   };
+  // }
+
   getAllMoves(color) {
     let pieces = this.getPieces(color);
     let duplications = [];
