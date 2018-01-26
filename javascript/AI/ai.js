@@ -7,7 +7,7 @@ class AI {
     this.board = board;
     this.root = new Node();
     this.nodeCount = 0;
-    this.depth = 4;
+    this.depth = 3;
   }
 
   swapColor() {
@@ -26,7 +26,12 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    if (depth === this.depth) { // if leaf node
+    if (depth === this.depth ||
+    // if (depth === this.depth ||
+    //   ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
+    //   ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
+      (this.nodeCount > 30000)
+    ) { // if leaf node
       if (board.isInCheckMate()) {
         node.data("val", board.points());
       } else {
@@ -95,13 +100,15 @@ class AI {
         1: 0,
         2: 0,
         3: 0,
-        4: 0
+        4: 0,
+        5: 0
       },
       cuts: {
         0: 0,
         1: 0,
         2: 0,
-        3: 0
+        3: 0,
+        4: 0
       },
     };
     this.root = new Node();
@@ -111,7 +118,7 @@ class AI {
     window.root = this.root;
     window.dh = this.depthHash;
     console.log("### THOUGHTS ###");
-    console.log(`Total Node Count: ${this.nodeCount}`);
+    console.log(`Total Node Count: ${this.nodeCount} ${this.nodeCount > 30000 ? '(CAPPED)' : ''}`);
     console.log(`Time: ${(Date.now() - start)/1000}s`);
 
     console.log(`Hash: ${JSON.stringify(this.depthHash, null, '\t')}`);

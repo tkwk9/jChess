@@ -33,6 +33,7 @@ class Piece {
   }
 
   getPoints() {
+    // let points = this.pointsArray[this.position.x][this.position.y];
     let points = this.pointsArray[this.position.x][this.position.y] + this.points;
     return (this.color === "black") ? -1 * points : points;
   }
@@ -131,7 +132,7 @@ export class Bishop extends SlidingPiece {
                       [-10, 10, 10, 10, 10, 10, 10,-10],
                       [-10,  5,  0,  0,  0,  0,  5,-10],
                       [-20,-10,-10,-10,-10,-10,-10,-20]];
-    this.points = 51;
+    this.points = 80;
     this.updatePoints();
 
   }

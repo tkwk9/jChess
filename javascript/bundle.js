@@ -481,6 +481,7 @@ class Piece {
   }
 
   getPoints() {
+    // let points = this.pointsArray[this.position.x][this.position.y];
     let points = this.pointsArray[this.position.x][this.position.y] + this.points;
     return (this.color === "black") ? -1 * points : points;
   }
@@ -579,7 +580,7 @@ class Bishop extends SlidingPiece {
                       [-10, 10, 10, 10, 10, 10, 10,-10],
                       [-10,  5,  0,  0,  0,  0,  5,-10],
                       [-20,-10,-10,-10,-10,-10,-10,-20]];
-    this.points = 51;
+    this.points = 80;
     this.updatePoints();
 
   }
@@ -788,7 +789,7 @@ class AI {
     this.board = board;
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
     this.nodeCount = 0;
-    this.depth = 4;
+    this.depth = 3;
   }
 
   swapColor() {
@@ -807,7 +808,12 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    if (depth === this.depth) { // if leaf node
+    if (depth === this.depth ||
+    // if (depth === this.depth ||
+    //   ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
+    //   ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
+      (this.nodeCount > 30000)
+    ) { // if leaf node
       if (board.isInCheckMate()) {
         node.data("val", board.points());
       } else {
@@ -876,13 +882,15 @@ class AI {
         1: 0,
         2: 0,
         3: 0,
-        4: 0
+        4: 0,
+        5: 0
       },
       cuts: {
         0: 0,
         1: 0,
         2: 0,
-        3: 0
+        3: 0,
+        4: 0
       },
     };
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
@@ -892,7 +900,7 @@ class AI {
     window.root = this.root;
     window.dh = this.depthHash;
     console.log("### THOUGHTS ###");
-    console.log(`Total Node Count: ${this.nodeCount}`);
+    console.log(`Total Node Count: ${this.nodeCount} ${this.nodeCount > 30000 ? '(CAPPED)' : ''}`);
     console.log(`Time: ${(Date.now() - start)/1000}s`);
 
     console.log(`Hash: ${JSON.stringify(this.depthHash, null, '\t')}`);
