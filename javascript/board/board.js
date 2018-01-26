@@ -86,23 +86,46 @@ class Board {
   }
 
   pumpMoves(color) {
-    let arr = this.getPieces(color);
-    let piece;
-    arr.unshift(false);
+    let pieces = this.getPieces(color);
+    let piece = pieces.pop();
+    let pump = piece.pumpValidMove();
+    pieces.unshift(false);
     return () => {
-      let ev = arr.pop();
-      while (ev.isPiece) {
-        piece = ev;
-        arr = arr.concat(ev.getValidMoves());
-        ev = arr.pop();
+      let move = pump();
+      while (!move){ // ran out of moves
+        piece = pieces.pop();
+        if (!piece) { // and out of pieces
+          return false;
+        }
+        pump = piece.pumpValidMove();
+        move = pump();
       }
-      if (ev === false) {
-        return false;
-      }
-      let dup = this.dup();
-      dup.movePiece(piece.position, ev);
-      return dup;
+      // if (move === undefined) { //out of moves
+      // }
+      // if (ev === false) {
+      //   return false;
+      // }
+      // let dup = this.dup();
+      // dup.movePiece(piece.position, ev);
+      return move;
     };
+    // let arr = this.getPieces(color);
+    // let piece;
+    // arr.unshift(false);
+    // return () => {
+    //   let ev = arr.pop();
+    //   while (ev.isPiece) {
+    //     piece = ev;
+    //     arr = arr.concat(ev.getValidMoves());
+    //     ev = arr.pop();
+    //   }
+    //   if (ev === false) {
+    //     return false;
+    //   }
+    //   let dup = this.dup();
+    //   dup.movePiece(piece.position, ev);
+    //   return dup;
+    // };
   }
 
   // genMoves(color) {

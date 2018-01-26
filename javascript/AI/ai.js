@@ -6,7 +6,7 @@ class AI {
     this.color = color;
     this.board = board;
     this.root = new Node();
-    this.depth = 4;
+    this.depth = 3;
   }
 
   swapColor() {
@@ -22,11 +22,6 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    // let dups = node.data("Board").getAllMoves(color);
-    // if (dups.length === 0 ) { // if in checkmate
-    //   node.data("val", color === "black" ? 9999 : -9999);
-    //   return node;
-    // } else
     if (depth === this.depth) { // if leaf node
       if (board.isInCheckMate()) {
         node.data("val", board.points());

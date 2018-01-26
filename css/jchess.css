@@ -108,6 +108,7 @@ h1 {
   vertical-align: middle;
   box-sizing: border-box;
   font-size: 45px;
+  color: black;
 }
 
 .tile:hover {
@@ -164,31 +165,47 @@ h1 {
   -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
           animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
 }
+
+/* .tile.light {
+  background-color: #cec1ab;
+}
+.tile.dark {
+  background-color: #876124;
+} */
 .sk-cube-grid .sk-cube1 {
+  background-color: #876124;
   -webkit-animation-delay: 0.2s;
           animation-delay: 0.2s; }
 .sk-cube-grid .sk-cube2 {
+  background-color: #cec1ab;
   -webkit-animation-delay: 0.3s;
           animation-delay: 0.3s; }
 .sk-cube-grid .sk-cube3 {
+  background-color: #876124;
   -webkit-animation-delay: 0.4s;
           animation-delay: 0.4s; }
 .sk-cube-grid .sk-cube4 {
+  background-color: #cec1ab;
   -webkit-animation-delay: 0.1s;
           animation-delay: 0.1s; }
 .sk-cube-grid .sk-cube5 {
+  background-color: #876124;
   -webkit-animation-delay: 0.2s;
           animation-delay: 0.2s; }
 .sk-cube-grid .sk-cube6 {
+  background-color: #cec1ab;
   -webkit-animation-delay: 0.3s;
           animation-delay: 0.3s; }
 .sk-cube-grid .sk-cube7 {
+  background-color: #876124;
   -webkit-animation-delay: 0s;
           animation-delay: 0s; }
 .sk-cube-grid .sk-cube8 {
+  background-color: #cec1ab;
   -webkit-animation-delay: 0.1s;
           animation-delay: 0.1s; }
 .sk-cube-grid .sk-cube9 {
+  background-color: #876124;
   -webkit-animation-delay: 0.2s;
           animation-delay: 0.2s; }
 

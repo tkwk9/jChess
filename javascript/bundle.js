@@ -157,23 +157,46 @@ class Board {
   }
 
   pumpMoves(color) {
-    let arr = this.getPieces(color);
-    let piece;
-    arr.unshift(false);
+    let pieces = this.getPieces(color);
+    let piece = pieces.pop();
+    let pump = piece.pumpValidMove();
+    pieces.unshift(false);
     return () => {
-      let ev = arr.pop();
-      while (ev.isPiece) {
-        piece = ev;
-        arr = arr.concat(ev.getValidMoves());
-        ev = arr.pop();
+      let move = pump();
+      while (!move){ // ran out of moves
+        piece = pieces.pop();
+        if (!piece) { // and out of pieces
+          return false;
+        }
+        pump = piece.pumpValidMove();
+        move = pump();
       }
-      if (ev === false) {
-        return false;
-      }
-      let dup = this.dup();
-      dup.movePiece(piece.position, ev);
-      return dup;
+      // if (move === undefined) { //out of moves
+      // }
+      // if (ev === false) {
+      //   return false;
+      // }
+      // let dup = this.dup();
+      // dup.movePiece(piece.position, ev);
+      return move;
     };
+    // let arr = this.getPieces(color);
+    // let piece;
+    // arr.unshift(false);
+    // return () => {
+    //   let ev = arr.pop();
+    //   while (ev.isPiece) {
+    //     piece = ev;
+    //     arr = arr.concat(ev.getValidMoves());
+    //     ev = arr.pop();
+    //   }
+    //   if (ev === false) {
+    //     return false;
+    //   }
+    //   let dup = this.dup();
+    //   dup.movePiece(piece.position, ev);
+    //   return dup;
+    // };
   }
 
   // genMoves(color) {
@@ -457,6 +480,28 @@ class Piece {
     return (this.color === "black") ? -1 * points : points;
   }
 
+  pumpValidMove() {
+    let moves = this.getMoves();
+    moves.unshift(false);
+    return () => {
+      let move = moves.pop();
+      if (!move) {
+        return false;
+      }
+      let newBoard = this.board.dup();
+      newBoard.movePiece(this.position, move);
+      while (newBoard.isInCheck(this.color)) {
+        move = moves.pop();
+        if (!move) {
+          return false;
+        }
+        newBoard = this.board.dup();
+        newBoard.movePiece(this.position, move);
+      }
+      return newBoard;
+    };
+  }
+
   getValidMoves() {
     let moves = this.getMoves();
     return moves.filter(move => {
@@ -737,7 +782,7 @@ class AI {
     this.color = color;
     this.board = board;
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-    this.depth = 4;
+    this.depth = 3;
   }
 
   swapColor() {
@@ -753,11 +798,6 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    // let dups = node.data("Board").getAllMoves(color);
-    // if (dups.length === 0 ) { // if in checkmate
-    //   node.data("val", color === "black" ? 9999 : -9999);
-    //   return node;
-    // } else
     if (depth === this.depth) { // if leaf node
       if (board.isInCheckMate()) {
         node.data("val", board.points());

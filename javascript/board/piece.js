@@ -37,6 +37,28 @@ class Piece {
     return (this.color === "black") ? -1 * points : points;
   }
 
+  pumpValidMove() {
+    let moves = this.getMoves();
+    moves.unshift(false);
+    return () => {
+      let move = moves.pop();
+      if (!move) {
+        return false;
+      }
+      let newBoard = this.board.dup();
+      newBoard.movePiece(this.position, move);
+      while (newBoard.isInCheck(this.color)) {
+        move = moves.pop();
+        if (!move) {
+          return false;
+        }
+        newBoard = this.board.dup();
+        newBoard.movePiece(this.position, move);
+      }
+      return newBoard;
+    };
+  }
+
   getValidMoves() {
     let moves = this.getMoves();
     return moves.filter(move => {
