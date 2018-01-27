@@ -262,9 +262,9 @@ class Board {
       if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
         this.deathCout++;
         if (this.deathCount === 20) {
-          // this.game.ai.depth = 6;
-          // this.game.ai.passRate1 = 0.2;
-          // this.game.ai.passRate1 = 1;
+          this.game.ai.depth = 5;
+          this.game.ai.passRate1 = 0.2;
+          this.game.ai.passRate1 = 1;
         }
         $(`.captures.${destPiece.color}`).
         append(`<div class="captured">${destPiece.unicode}</div>`);
@@ -858,6 +858,8 @@ class AI {
       this.runtimeDepth = 2;
     }
 
+    // this.root.data("Board") === this.root.getChild(this.root.childIds[0]).data("Board");
+
     if (depth >= this.runtimeDepth) {
       return true;
     } else if (depth <= 2) {
@@ -899,10 +901,11 @@ class AI {
     //   (this.nodeCount > 30000)
     // ) { // if leaf node
     if (this.advanceDenied(depth)) { // if leaf node
-      if (board.isInCheckMate()) {
-        node.data("val", board.points());
+      if (board.isInCheckMate(color)) {
+        node.data("val", color === "black" ? 9999 : -9999);
+        // B -1-> W -2-> B -3-> W
       } else {
-        node.data("val", color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+        node.data("val", board.points());
       }
       return node;
     }
@@ -910,6 +913,8 @@ class AI {
 
     let pump = board.pumpMoves(color);
     let move = pump();
+
+
 
     while (move){
       let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
@@ -950,7 +955,7 @@ class AI {
     }
 
     if(node.childIds.length === 0) {
-      node.data("val", color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+      node.data("val", color === "black" ? 9999 : -9999);
       return node;
     }
 
