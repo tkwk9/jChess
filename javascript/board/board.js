@@ -189,6 +189,12 @@ class Board {
     } else {
       this.lastMove = [startPos, destPos];
       if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
+        this.deathCout++;
+        if (this.deathCount === 20) {
+          // this.game.ai.depth = 6;
+          // this.game.ai.passRate1 = 0.2;
+          // this.game.ai.passRate1 = 1;
+        }
         $(`.captures.${destPiece.color}`).
         append(`<div class="captured">${destPiece.unicode}</div>`);
         this.placePiece(startPiece, destPos);

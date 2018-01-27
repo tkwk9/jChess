@@ -260,6 +260,12 @@ class Board {
     } else {
       this.lastMove = [startPos, destPos];
       if (this.isOpponentTile(startPiece, destPos) && this.isRealBoard) {
+        this.deathCout++;
+        if (this.deathCount === 20) {
+          // this.game.ai.depth = 6;
+          // this.game.ai.passRate1 = 0.2;
+          // this.game.ai.passRate1 = 1;
+        }
         $(`.captures.${destPiece.color}`).
         append(`<div class="captured">${destPiece.unicode}</div>`);
         this.placePiece(startPiece, destPos);
@@ -580,7 +586,7 @@ class Bishop extends SlidingPiece {
                       [-10, 10, 10, 10, 10, 10, 10,-10],
                       [-10,  5,  0,  0,  0,  0,  5,-10],
                       [-20,-10,-10,-10,-10,-10,-10,-20]];
-    this.points = 80;
+    this.points = 330;
     this.updatePoints();
 
   }
@@ -602,7 +608,7 @@ class Rook extends SlidingPiece {
                         [-5,  0,  0,  0,  0,  0,  0, -5],
                         [-5,  0,  0,  0,  0,  0,  0, -5],
                         [0,  0,  0,  5,  5,  0,  0,  0]];
-    this.points = 55;
+    this.points = 500;
 
     this.updatePoints();
 
@@ -625,7 +631,7 @@ class Queen extends SlidingPiece {
                         [-10,  5,  5,  5,  5,  5,  0,-10],
                         [-10,  0,  5,  0,  0,  0,  0,-10],
                         [-20,-10,-10, -5, -5,-10,-10,-20]];
-    this.points = 100;
+    this.points = 900;
 
     this.updatePoints();
 
@@ -649,7 +655,7 @@ class Knight extends SteppingPiece {
       {x: -1, y:-2},
       {x: -1, y:2}
     ];
-    this.pointsArray =[[-30,-40,-30,-30,-30,-30,-40,-50],
+    this.pointsArray =[[-50,-40,-30,-30,-30,-30,-40,-50],
                       [-40,-20,  0,  0,  0,  0,-20,-40],
                       [-30,  0, 10, 15, 15, 10,  0,-30],
                       [-30,  5, 15, 20, 20, 15,  5,-30],
@@ -657,7 +663,7 @@ class Knight extends SteppingPiece {
                       [-30,  5, 10, 15, 15, 10,  5,-30],
                       [-40,-20,  0,  5,  5,  0,-20,-40],
                       [-50,-40,-30,-30,-30,-30,-40,-50]];
-    this.points = 80;
+    this.points = 320;
     this.updatePoints();
 
   }
@@ -683,7 +689,7 @@ class King extends SteppingPiece {
                         [-10,-20,-20,-20,-20,-20,-20,-10],
                         [ 20, 20,  0,  0,  0,  0, 20, 20],
                         [ 20, 30, 10,  0,  0, 10, 30, 20]];
-    this.points = 950;
+    this.points = 20000;
     this.updatePoints();
 
   }
@@ -747,7 +753,7 @@ class Pawn extends Piece {
                         [5, 10, 10,-20,-20, 10, 10,  5],
                         [0,  0,  0,  0,  0,  0,  0,  0]];
     this.updatePoints();
-    this.points = 30;
+    this.points = 100;
 
     if (color === 'black') {
       this.direction = {
@@ -835,6 +841,8 @@ class AI {
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
     this.nodeCount = 0;
     this.depth = 3;
+    this.passRate1 = 1;
+    this.passRate2 = 0.1;
   }
 
   swapColor() {
@@ -845,6 +853,36 @@ class AI {
     }
   }
 
+  advanceDenied(depth) {
+    if (this.nodeCount > 12000) {
+      this.runtimeDepth = 2;
+    }
+
+    if (depth >= this.runtimeDepth) {
+      return true;
+    } else if (depth <= 2) {
+      return false;
+    } else if (depth % 2 === 1) {
+      if (Math.random() > this.passRate1) {
+        return true;
+      }
+    } else {
+      if (Math.random() > this.passRate2) {
+        return true;
+      }
+    }
+    return false;
+    // if (depth === this.depth || (this.nodeCount > 30000)) {
+    //   return true;
+    // } else if (depth <= 2) {
+    //   return false;
+    // } else if (depth % 2 === 1) {
+    //   if (Math.random() < this.passRate1) {
+    //     return false; }
+    // }
+    // return false;
+  }
+
   abPrune(node, depth, alpha, beta, color) {
     this.depthHash.node[depth] += 1;
     this.nodeCount += 1;
@@ -853,19 +891,22 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    if (depth === this.depth ||
-      // ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
-      // ((depth === this.depth - 2) && (Math.random() > 0.25)) ||
-      (this.nodeCount > 30000)
-    ) { // if leaf node
+    // if (depth === this.depth ||
+    //   // ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
+    //   ((depth === this.depth - 2) && (Math.random() > 0.0005)) ||
+    //   ((depth === this.depth - 4) && (Math.random() > 0.0005)) ||
+    //   // ((depth === this.depth - 6) && (Math.random() > 0.01)) ||
+    //   (this.nodeCount > 30000)
+    // ) { // if leaf node
+    if (this.advanceDenied(depth)) { // if leaf node
       if (board.isInCheckMate()) {
         node.data("val", board.points());
       } else {
-        node.data("val", color === "black" ? 9999 : -9999);
+        node.data("val", color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
       }
       return node;
     }
-    let val = color === "black" ? 9999 : -9999;
+    let val = color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
 
     let pump = board.pumpMoves(color);
     let move = pump();
@@ -909,7 +950,7 @@ class AI {
     }
 
     if(node.childIds.length === 0) {
-      node.data("val", color === "black" ? 9999 : -9999);
+      node.data("val", color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
       return node;
     }
 
@@ -920,31 +961,27 @@ class AI {
   getMove() {
     let start = Date.now();
     this.nodeCount = 0;
+    this.runtimeDepth = this.depth;
     this.depthHash = {
       node: {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0
+
       },
       cuts: {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0
+
       },
     };
+    for (let i = 0; i <= this.depth; i++) {
+      this.depthHash.node[i] = 0;
+      if (i < this.depth) this.depthHash.cuts[i] = 0;
+    }
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
     this.root.data("Board", this.board).data("Points", this.board.points(this.aiColor));
     this.color = "black";
-    this.abPrune(this.root, 0, -9999, 9999, "black");
+    this.abPrune(this.root, 0, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, "black");
     window.root = this.root;
     window.dh = this.depthHash;
     console.log("### THOUGHTS ###");
-    console.log(`Total Node Count: ${this.nodeCount} ${this.nodeCount > 30000 ? '(CAPPED)' : ''}`);
+    console.log(`Total Node Count: ${this.nodeCount} ${this.nodeCount > 12000 ? '(CAPPED)' : ''}`);
     console.log(`Time: ${(Date.now() - start)/1000}s`);
 
     console.log(`Hash: ${JSON.stringify(this.depthHash, null, '\t')}`);

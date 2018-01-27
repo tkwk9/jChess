@@ -132,7 +132,7 @@ export class Bishop extends SlidingPiece {
                       [-10, 10, 10, 10, 10, 10, 10,-10],
                       [-10,  5,  0,  0,  0,  0,  5,-10],
                       [-20,-10,-10,-10,-10,-10,-10,-20]];
-    this.points = 80;
+    this.points = 330;
     this.updatePoints();
 
   }
@@ -152,7 +152,7 @@ export class Rook extends SlidingPiece {
                         [-5,  0,  0,  0,  0,  0,  0, -5],
                         [-5,  0,  0,  0,  0,  0,  0, -5],
                         [0,  0,  0,  5,  5,  0,  0,  0]];
-    this.points = 55;
+    this.points = 500;
 
     this.updatePoints();
 
@@ -173,7 +173,7 @@ export class Queen extends SlidingPiece {
                         [-10,  5,  5,  5,  5,  5,  0,-10],
                         [-10,  0,  5,  0,  0,  0,  0,-10],
                         [-20,-10,-10, -5, -5,-10,-10,-20]];
-    this.points = 100;
+    this.points = 900;
 
     this.updatePoints();
 
@@ -195,7 +195,7 @@ export class Knight extends SteppingPiece {
       {x: -1, y:-2},
       {x: -1, y:2}
     ];
-    this.pointsArray =[[-30,-40,-30,-30,-30,-30,-40,-50],
+    this.pointsArray =[[-50,-40,-30,-30,-30,-30,-40,-50],
                       [-40,-20,  0,  0,  0,  0,-20,-40],
                       [-30,  0, 10, 15, 15, 10,  0,-30],
                       [-30,  5, 15, 20, 20, 15,  5,-30],
@@ -203,7 +203,7 @@ export class Knight extends SteppingPiece {
                       [-30,  5, 10, 15, 15, 10,  5,-30],
                       [-40,-20,  0,  5,  5,  0,-20,-40],
                       [-50,-40,-30,-30,-30,-30,-40,-50]];
-    this.points = 80;
+    this.points = 320;
     this.updatePoints();
 
   }
@@ -227,7 +227,7 @@ export class King extends SteppingPiece {
                         [-10,-20,-20,-20,-20,-20,-20,-10],
                         [ 20, 20,  0,  0,  0,  0, 20, 20],
                         [ 20, 30, 10,  0,  0, 10, 30, 20]];
-    this.points = 950;
+    this.points = 20000;
     this.updatePoints();
 
   }
@@ -289,7 +289,7 @@ export class Pawn extends Piece {
                         [5, 10, 10,-20,-20, 10, 10,  5],
                         [0,  0,  0,  0,  0,  0,  0,  0]];
     this.updatePoints();
-    this.points = 30;
+    this.points = 100;
 
     if (color === 'black') {
       this.direction = {
