@@ -135,19 +135,22 @@ class AI {
     this.nodeCount = 0;
     this.runtimeDepth = this.depth;
     this.depthHash = {
-      node: {
-
-      },
-      cuts: {
-
-      },
+      node: {},
+      cuts: {},
     };
     for (let i = 0; i <= this.depth; i++) {
       this.depthHash.node[i] = 0;
       if (i < this.depth) this.depthHash.cuts[i] = 0;
     }
+
+    let worker = new Worker("javascript/AI/ab_worker.js");
+    worker.postMessage("do something");
+    worker.onmessage = (e) => {
+      console.log(e.data);
+    };
+
     this.root = new Node();
-    this.root.data("Board", this.board).data("Points", this.board.points(this.aiColor));
+    this.root.data("Board", this.board);
     this.color = "black";
     this.abPrune(this.root, 0, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, "black");
     window.root = this.root;
