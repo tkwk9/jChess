@@ -41,15 +41,6 @@ class AI {
       }
     }
     return false;
-    // if (depth === this.depth || (this.nodeCount > 30000)) {
-    //   return true;
-    // } else if (depth <= 2) {
-    //   return false;
-    // } else if (depth % 2 === 1) {
-    //   if (Math.random() < this.passRate1) {
-    //     return false; }
-    // }
-    // return false;
   }
 
   abPrune(node, depth, alpha, beta, color) {
@@ -60,17 +51,10 @@ class AI {
     node.data("best", node);
 
     // Basecases
-    // if (depth === this.depth ||
-    //   // ((depth === this.depth - 1) && (Math.random() > 0.10)) ||
-    //   ((depth === this.depth - 2) && (Math.random() > 0.0005)) ||
-    //   ((depth === this.depth - 4) && (Math.random() > 0.0005)) ||
-    //   // ((depth === this.depth - 6) && (Math.random() > 0.01)) ||
-    //   (this.nodeCount > 30000)
-    // ) { // if leaf node
+
     if (this.advanceDenied(depth)) { // if leaf node
       if (board.isInCheckMate(color)) {
         node.data("val", color === "black" ? 9999 : -9999);
-        // B -1-> W -2-> B -3-> W
       } else {
         node.data("val", board.points());
       }
@@ -80,8 +64,6 @@ class AI {
 
     let pump = board.pumpMoves(color);
     let move = pump();
-
-
 
     while (move){
       let childNode = new Node();
@@ -99,7 +81,6 @@ class AI {
         if (val < beta){
           beta = val;
         }
-        // if (beta <= alpha) break;
         if (beta <= alpha) {
           this.depthHash.cuts[depth] += 1;
           break;
@@ -116,7 +97,6 @@ class AI {
           this.depthHash.cuts[depth] += 1;
           break;
         }
-        // if (beta <= alpha) break;
       }
       move = pump();
     }
@@ -143,11 +123,11 @@ class AI {
       if (i < this.depth) this.depthHash.cuts[i] = 0;
     }
 
-    let worker = new Worker("javascript/AI/ab_worker.js");
-    worker.postMessage("do something");
-    worker.onmessage = (e) => {
-      console.log(e.data);
-    };
+    // let worker = new Worker("javascript/AI/ab_worker.js");
+    // worker.postMessage({abPrune: this.root});
+    // worker.onmessage = (e) => {
+    //   console.log(e.data);
+    // };
 
     this.root = new Node();
     this.root.data("Board", this.board);

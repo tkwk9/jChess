@@ -20,13 +20,19 @@ class jChess {
     this.board.turn = this.turn;
     this.evaluateGameStatus();
     if (this.turn === "black") {
-
       setTimeout(this.fetchMoves.bind(this), 500);
     }
   }
 
   fetchMoves() {
     let move = this.ai.getMove();
+    this.board.movePiece(move[0], move[1]);
+    this.view.setAiMove(move[0], move[1]);
+    this.view.update();
+    this.changeTurns();
+  }
+
+  receiveMoves(move) {
     this.board.movePiece(move[0], move[1]);
     this.view.setAiMove(move[0], move[1]);
     this.view.update();
