@@ -72,7 +72,7 @@
 
 
 class Board {
-  constructor(starting = true){
+  constructor(starting = true, boardState){
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
     this.isRealBoard = starting;
     if(starting){
@@ -80,12 +80,19 @@ class Board {
       window.pieces = this.getPieces.bind(this);
       window.points = this.points.bind(this);
     }
+    if(boardState) {
+
+    }
     this.points = this.points.bind(this);
     this.deathCount = 0;
     this.inCheck = {
       "black": false,
       "white": false
     };
+  }
+
+  toString() {
+
   }
 
   setGame(game) {
@@ -245,8 +252,8 @@ class Board {
     ) {
       if (destPos.y === 6) {
         this.movePiece({x: startPos.x, y: 7}, {x: startPos.x, y: 5});
-      } else if (destPos.y === 1) {
-        this.movePiece({x: startPos.x, y: 0}, {x: startPos.x, y: 2});
+      } else if (destPos.y === 2) {
+        this.movePiece({x: startPos.x, y: 0}, {x: startPos.x, y: 3});
       }
     }
 
@@ -363,6 +370,7 @@ $( () => {
   const $mainDiv = $('#j-chess');
   const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
   const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.board);
+  window.board = game.board;
   game.view = view;
 });
 
@@ -395,7 +403,7 @@ class jChess {
     this.turn = this.opponent[this.turn];
     this.board.turn = this.turn;
     this.evaluateGameStatus();
-    if (this.turn === "black") {
+    if (this.turn === "black" && !this.board.isInCheckMate("black")) {
       setTimeout(this.fetchMoves.bind(this), 500);
     }
   }
@@ -683,7 +691,7 @@ class King extends SteppingPiece {
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
 
-    this.castleLeft = {x: 0, y: -3};
+    this.castleLeft = {x: 0, y: -2};
     this.castleRight = {x: 0, y: 2};
 
     this.directions = LINES.concat(DIAGONALS);

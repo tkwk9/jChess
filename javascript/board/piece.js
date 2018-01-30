@@ -215,7 +215,7 @@ export class King extends SteppingPiece {
     this.unicode = (this.color === "black") ? "\u265A" : "\u2654";
     this.type = "King";
 
-    this.castleLeft = {x: 0, y: -3};
+    this.castleLeft = {x: 0, y: -2};
     this.castleRight = {x: 0, y: 2};
 
     this.directions = LINES.concat(DIAGONALS);

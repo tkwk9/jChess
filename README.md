@@ -87,4 +87,8 @@ This approach of board evaluation was inspired by [this article.](https://chessp
 
 ### Looking Ahead
 
-Now that the AI has a means to evaluate a board condition, it needs a way to look ahead several moves.
+Now that the AI has a means to evaluate a board condition, it needs a way to look ahead several moves. jChess employs a alpha-beta pruning, minimax algorithm to do this.
+
+#### Alpha-Beta Pruning
+
+Even when looking only 3 moves ahead, it would not be feasible to evaluate every single leaf node. This is where A/B Pruning comes into play.

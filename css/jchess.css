@@ -1,10 +1,17 @@
 
 h1 {
   font-size: 50px;
-  height: 120px;
+  height: 100px;
   font-family: 'Gloria Hallelujah', cursive;
   text-align: center;
   margin: 0 auto;
+}
+h2 {
+  font-size: 32px;
+  height: 70px;
+  font-family: 'Gloria Hallelujah', cursive;
+  text-align: center;
+  /* margin: 0 auto; */
 }
 
 #game-status {
@@ -100,6 +107,16 @@ h1 {
   border: 1px solid black;
 }
 
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.social img {
+  width: 32px;
+  height: 32px;
+  margin: 0 5px;
+}
 .tile {
   width: 64px;
   height: 64px;

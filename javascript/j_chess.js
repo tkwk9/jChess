@@ -19,7 +19,7 @@ class jChess {
     this.turn = this.opponent[this.turn];
     this.board.turn = this.turn;
     this.evaluateGameStatus();
-    if (this.turn === "black") {
+    if (this.turn === "black" && !this.board.isInCheckMate("black")) {
       setTimeout(this.fetchMoves.bind(this), 500);
     }
   }

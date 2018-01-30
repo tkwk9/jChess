@@ -1,7 +1,7 @@
 import * as Piece from "./piece";
 
 class Board {
-  constructor(starting = true){
+  constructor(starting = true, boardState){
     this.piecesGrid = [[],[],[],[],[],[],[],[]];
     this.isRealBoard = starting;
     if(starting){
@@ -9,12 +9,19 @@ class Board {
       window.pieces = this.getPieces.bind(this);
       window.points = this.points.bind(this);
     }
+    if(boardState) {
+
+    }
     this.points = this.points.bind(this);
     this.deathCount = 0;
     this.inCheck = {
       "black": false,
       "white": false
     };
+  }
+
+  toString() {
+
   }
 
   setGame(game) {
@@ -174,8 +181,8 @@ class Board {
     ) {
       if (destPos.y === 6) {
         this.movePiece({x: startPos.x, y: 7}, {x: startPos.x, y: 5});
-      } else if (destPos.y === 1) {
-        this.movePiece({x: startPos.x, y: 0}, {x: startPos.x, y: 2});
+      } else if (destPos.y === 2) {
+        this.movePiece({x: startPos.x, y: 0}, {x: startPos.x, y: 3});
       }
     }
 
