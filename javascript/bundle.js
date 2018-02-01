@@ -724,7 +724,7 @@ class King extends SteppingPiece {
       if (this.castleLeft &&
         this.board.getPiece(
           this.addDirection(this.position, {x: 0, y: -1})
-        ) === this.board.nullPiece ||
+        ) === this.board.nullPiece &&
         this.board.getPiece(
           this.addDirection(this.position, {x: 0, y: -2})
         ) === this.board.nullPiece
