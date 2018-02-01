@@ -91,11 +91,9 @@ Now that the AI has a means to evaluate a board condition, it needs a way to loo
 
 #### Maximin Algorithm
 
-Minimax is a decision algorithm that seeks to minimize the potential loss. Since jChess AI plays with black pieces (i.e. lower the points the better), the algorithm used is Maximin algorithm, but the principle is essentially the same.
-
-Maximin algorithm is best represented by a tree, where nodes represent the states of the board, and edges represent potential moves made from that board. Since turns alternate every time a move is made, each level of the tree has a distinct player who's turn it is to make a move.
+TBD
 
 
 #### Alpha-Beta Pruning
 
-Even when looking only 3 moves ahead, it would not be feasible to evaluate every single leaf node. This is where alpha-beta pruning comes into play.
+TBD
