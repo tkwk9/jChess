@@ -33,7 +33,6 @@ class Piece {
   }
 
   getPoints() {
-    // let points = this.pointsArray[this.position.x][this.position.y];
     let points = this.pointsArray[this.position.x][this.position.y] + this.points;
     return (this.color === "black") ? -1 * points : points;
   }
