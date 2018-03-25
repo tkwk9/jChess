@@ -108,7 +108,6 @@ class AI {
               }
             }
             move = pump();
-            if (breaker === unbreaker) console.log('not broken correctly');
             iterateMove();
           };
         };

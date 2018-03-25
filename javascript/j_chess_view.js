@@ -5,7 +5,7 @@ class jChessView {
     this.$mainDiv = $mainDiv;
     this.game = game;
     this.board = board;
-    this.tileGrid = [[],[],[],[],[],[],[],[]];
+    this.tileGrid = [[], [], [], [], [], [], [], []];
 
     this.moves = [];
     this.p1Hover = undefined;
@@ -21,9 +21,10 @@ class jChessView {
     return this.tileGrid[position.x][position.y];
   }
 
-  isInMoves(pos){
-    return this.moves.filter( move => move.x === pos.x &&
-      move.y === pos.y).length > 0;
+  isInMoves(pos) {
+    return (
+      this.moves.filter(move => move.x === pos.x && move.y === pos.y).length > 0
+    );
   }
 
   setAiMove(startPos, endPos) {
@@ -64,12 +65,12 @@ class jChessView {
 
   update() {
     this.clearBoard();
-    for (let i = 0; i < 8; i++){
-      for (let j = 0; j < 8; j++){
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
         this.tileGrid[i][j].html(this.board.piecesGrid[i][j].unicode);
       }
     }
-    this.moves.forEach((move) => {
+    this.moves.forEach(move => {
       this.getTile(move).addClass('path');
     });
     if (this.aiStart) {
@@ -89,7 +90,7 @@ class jChessView {
   handleClick(pos) {
     return () => {
       if (this.startPos) {
-        if(this.isInMoves(pos)){
+        if (this.isInMoves(pos)) {
           this.board.movePiece(this.startPos, pos);
           this.removeMoves();
           this.removeAiMoves();
@@ -100,7 +101,7 @@ class jChessView {
           this.update();
         }
       } else {
-        if(this.board.isPieceTurn(pos)){
+        if (this.board.turn === 'white' && this.board.isPieceTurn(pos)) {
           this.showMoves(pos);
           this.startPos = pos;
         }
@@ -110,12 +111,12 @@ class jChessView {
 
   handleMouseEnter(pos) {
     return () => {
-      if(!this.startPos){
-        if(this.board.isPieceTurn(pos)){
+      if (!this.startPos) {
+        if (this.board.isPieceTurn(pos)) {
           this.showMoves(pos);
         }
       } else {
-        if (this.isInMoves(pos)){
+        if (this.isInMoves(pos)) {
           this.p2Hover = pos;
         } else {
           this.p2Hover = undefined;
@@ -127,7 +128,7 @@ class jChessView {
 
   handleMouseLeave() {
     return () => {
-      if(!this.startPos){
+      if (!this.startPos) {
         this.removeMoves();
         this.update();
       }
@@ -138,11 +139,11 @@ class jChessView {
     this.$outerBoard = $(`<div class="outer-board"></div>`);
     this.$innerBoard = $('<ul class="inner-board"></ul>');
 
-    this.$outerBoard.append(this.makeMarkers("alphabet").addClass("flipped"));
-    this.$outerBoard.append(this.makeMarkers("num"));
+    this.$outerBoard.append(this.makeMarkers('alphabet').addClass('flipped'));
+    this.$outerBoard.append(this.makeMarkers('num'));
     this.$outerBoard.append(this.$innerBoard);
-    this.$outerBoard.append(this.makeMarkers("num").addClass("flipped"));
-    this.$outerBoard.append(this.makeMarkers("alphabet"));
+    this.$outerBoard.append(this.makeMarkers('num').addClass('flipped'));
+    this.$outerBoard.append(this.makeMarkers('alphabet'));
 
     this.$mainDiv.append($("<div class='captures white'></div>"));
     this.$mainDiv.append(this.$outerBoard);
@@ -152,18 +153,13 @@ class jChessView {
   setupBoard() {
     for (let i = 63; i >= 0; i--) {
       const $tile = $('<li class="tile"></li>');
-      const pos = {x: Math.floor(i/8), y: 7 - (i % 8)};
+      const pos = { x: Math.floor(i / 8), y: 7 - i % 8 };
       $tile.data('pos', pos);
-      $tile.click(
-        this.handleClick(pos)
-      );
+      $tile.click(this.handleClick(pos));
 
-      $tile.hover(
-        this.handleMouseEnter(pos),
-        this.handleMouseLeave()
-      );
+      $tile.hover(this.handleMouseEnter(pos), this.handleMouseLeave());
 
-      if((pos.x + pos.y) % 2 === 0){
+      if ((pos.x + pos.y) % 2 === 0) {
         $tile.addClass('dark');
       } else {
         $tile.addClass('light');
@@ -176,19 +172,19 @@ class jChessView {
   makeMarkers(mode) {
     let marks;
     let classType;
-    switch (mode){
+    switch (mode) {
       case 'num':
-        marks = [8,7,6,5,4,3,2,1];
-        classType = "num";
+        marks = [8, 7, 6, 5, 4, 3, 2, 1];
+        classType = 'num';
         break;
       case 'alphabet':
-        marks = ["a","b","c","d","e","f","g","h"];
-        classType = "alphabet";
+        marks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        classType = 'alphabet';
         break;
     }
-    const markDivs = marks.map( mark => $(`<div class="mark">${mark}</div>`));
+    const markDivs = marks.map(mark => $(`<div class="mark">${mark}</div>`));
     const $markerDiv = $(`<div class="markers ${classType}"></div>`);
-    markDivs.forEach( $markDiv => $markerDiv.append($markDiv));
+    markDivs.forEach($markDiv => $markerDiv.append($markDiv));
     return $markerDiv;
   }
 }
