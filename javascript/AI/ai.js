@@ -10,6 +10,8 @@ class AI {
     this.depth = 3;
     this.passRate1 = 1;
     this.passRate2 = 0.1;
+
+    this.sendMove = this.sendMove.bind(this);
   }
 
   swapColor() {
@@ -74,8 +76,10 @@ class AI {
           return resolve(node);
         };
 
-        const processChildNode = (resolve, reject, childNode, iterateMove) => {
+        const processChildNode = (childNode, iterateMove) => {
           return () => {
+            let breaker = false;
+            let unbreaker = true;
             if (color === 'black') {
               if (val > childNode.data('val')) {
                 val = childNode.data('val');
@@ -86,6 +90,7 @@ class AI {
               }
               if (beta <= alpha) {
                 this.depthHash.cuts[depth] += 1;
+                breaker = false;
                 return resolveNode();
               }
             } else {
@@ -98,10 +103,12 @@ class AI {
               }
               if (beta <= alpha) {
                 this.depthHash.cuts[depth] += 1;
+                breaker = true;
                 return resolveNode();
               }
             }
             move = pump();
+            if (breaker === unbreaker) console.log('not broken correctly');
             iterateMove();
           };
         };
@@ -128,9 +135,7 @@ class AI {
                     beta,
                     'black'
                   );
-            prunePromise.then(
-              processChildNode(resolve, reject, childNode, iterateMove)
-            );
+            prunePromise.then(processChildNode(childNode, iterateMove));
           } else {
             return resolveNode();
           }
@@ -240,7 +245,7 @@ class AI {
       Number.POSITIVE_INFINITY,
       'black'
     ).then(response => {
-      return this.sendMove.bind(this)();
+      return this.sendMove();
     });
   }
 
