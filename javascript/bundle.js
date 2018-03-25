@@ -368,9 +368,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 $( () => {
   const $mainDiv = $('#j-chess');
+
+  // make game
+  // create view with game
+  // create ai with view
   const game = new __WEBPACK_IMPORTED_MODULE_0__j_chess__["a" /* default */]();
   const view = new __WEBPACK_IMPORTED_MODULE_1__j_chess_view__["a" /* default */]($mainDiv, game, game.board);
-  window.board = game.board;
   game.view = view;
 });
 
@@ -389,31 +392,29 @@ class jChess {
   constructor() {
     this.board = new __WEBPACK_IMPORTED_MODULE_0__board_board__["a" /* default */]();
 
-    this.turn = "white";
+    this.receiveMoves = this.receiveMoves.bind(this);
+
+    this.turn = 'white';
     this.opponent = {};
-    this.opponent["black"] = "white";
-    this.opponent["white"] = "black";
+    this.opponent['black'] = 'white';
+    this.opponent['white'] = 'black';
 
     this.board.setGame(this);
     this.evaluateGameStatus();
-    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, "black");
+    this.ai = new __WEBPACK_IMPORTED_MODULE_1__AI_ai__["a" /* default */](this.board, 'black');
   }
 
   changeTurns() {
     this.turn = this.opponent[this.turn];
     this.board.turn = this.turn;
     this.evaluateGameStatus();
-    if (this.turn === "black" && !this.board.isInCheckMate("black")) {
+    if (this.turn === 'black' && !this.board.isInCheckMate('black')) {
       setTimeout(this.fetchMoves.bind(this), 500);
     }
   }
 
   fetchMoves() {
-    let move = this.ai.getMove();
-    this.board.movePiece(move[0], move[1]);
-    this.view.setAiMove(move[0], move[1]);
-    this.view.update();
-    this.changeTurns();
+    this.ai.getMove().then(this.receiveMoves);
   }
 
   receiveMoves(move) {
@@ -425,37 +426,36 @@ class jChess {
 
   evaluateGameStatus() {
     let msg;
-    if (this.board.isInCheckMate(this.turn)){
-      msg = this.opponent[this.turn] === "black" ?
-        "Checkmate! Computer wins!" :
-        "Checkmate! You win!";
+    if (this.board.isInCheckMate(this.turn)) {
+      msg =
+        this.opponent[this.turn] === 'black'
+          ? 'Checkmate! Computer wins!'
+          : 'Checkmate! You win!';
     } else if (this.board.isInCheck(this.turn)) {
-      msg = this.turn === "black" ?
-        "Computer is in check!" :
-        "Check!";
+      msg = this.turn === 'black' ? 'Computer is in check!' : 'Check!';
     } else {
-      msg = this.turn === "black" ?
-        "Computer is thinking..." : "Your turn";
+      msg = this.turn === 'black' ? 'Computer is thinking...' : 'Your turn';
     }
     $('#game-status').empty();
     $('#game-status').html(msg);
-    if (this.turn === "black"){
-      $('#game-status').append($(
-        "<div class='sk-cube-grid'>" +
-        "<div class='sk-cube sk-cube1'></div>" +
-        "<div class='sk-cube sk-cube2'></div>" +
-        "<div class='sk-cube sk-cube3'></div>" +
-        "<div class='sk-cube sk-cube4'></div>" +
-        "<div class='sk-cube sk-cube5'></div>" +
-        "<div class='sk-cube sk-cube6'></div>" +
-        "<div class='sk-cube sk-cube7'></div>" +
-        "<div class='sk-cube sk-cube8'></div>" +
-        "<div class='sk-cube sk-cube9'></div>" +
-        "</div>"));
+    if (this.turn === 'black') {
+      $('#game-status').append(
+        $(
+          "<div class='sk-cube-grid'>" +
+            "<div class='sk-cube sk-cube1'></div>" +
+            "<div class='sk-cube sk-cube2'></div>" +
+            "<div class='sk-cube sk-cube3'></div>" +
+            "<div class='sk-cube sk-cube4'></div>" +
+            "<div class='sk-cube sk-cube5'></div>" +
+            "<div class='sk-cube sk-cube6'></div>" +
+            "<div class='sk-cube sk-cube7'></div>" +
+            "<div class='sk-cube sk-cube8'></div>" +
+            "<div class='sk-cube sk-cube9'></div>" +
+            '</div>'
+        )
+      );
     }
   }
-
-
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (jChess);
@@ -501,7 +501,6 @@ class Piece {
   }
 
   getPoints() {
-    // let points = this.pointsArray[this.position.x][this.position.y];
     let points = this.pointsArray[this.position.x][this.position.y] + this.points;
     return (this.color === "black") ? -1 * points : points;
   }
@@ -860,10 +859,10 @@ class AI {
   }
 
   swapColor() {
-    if (this.color === "black") {
-      this.color = "white";
+    if (this.color === 'black') {
+      this.color = 'white';
     } else {
-      this.color = "black";
+      this.color = 'black';
     }
   }
 
@@ -871,9 +870,6 @@ class AI {
     if (this.nodeCount > 12000) {
       this.runtimeDepth = 2;
     }
-
-    // this.root.data("Board") === this.root.getChild(this.root.childIds[0]).data("Board");
-
     if (depth >= this.runtimeDepth) {
       return true;
     } else if (depth <= 2) {
@@ -890,104 +886,225 @@ class AI {
     return false;
   }
 
+  abPrunePromise(node, depth, alpha, beta, color) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        this.depthHash.node[depth]++;
+        this.nodeCount++;
+
+        let board = node.data('Board');
+        node.data('best', node);
+        if (this.advanceDenied(depth)) {
+          if (board.isInCheckMate(color)) {
+            node.data('val', color === 'black' ? 9999 : -9999);
+          } else {
+            node.data('val', board.points());
+          }
+          return resolve(node);
+        }
+
+        let val =
+          color === 'black'
+            ? Number.POSITIVE_INFINITY
+            : Number.NEGATIVE_INFINITY;
+
+        let pump = board.pumpMoves(color);
+        let move = pump();
+
+        const resolveNode = () => {
+          if (node.childIds.length === 0) {
+            node.data('val', color === 'black' ? 9999 : -9999);
+          } else {
+            node.data('val', val);
+          }
+          return resolve(node);
+        };
+
+        const processChildNode = (resolve, reject, childNode, iterateMove) => {
+          return () => {
+            if (color === 'black') {
+              if (val > childNode.data('val')) {
+                val = childNode.data('val');
+                node.data('best', childNode);
+              }
+              if (val < beta) {
+                beta = val;
+              }
+              if (beta <= alpha) {
+                this.depthHash.cuts[depth] += 1;
+                return resolveNode();
+              }
+            } else {
+              if (val < childNode.data('val')) {
+                val = childNode.data('val');
+                node.data('best', childNode);
+              }
+              if (val > alpha) {
+                alpha = val;
+              }
+              if (beta <= alpha) {
+                this.depthHash.cuts[depth] += 1;
+                return resolveNode();
+              }
+            }
+            move = pump();
+            iterateMove();
+          };
+        };
+
+        const iterateMove = () => {
+          if (move) {
+            let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+            childNode.data('Board', move);
+            node.appendChild(childNode);
+
+            let prunePromise =
+              color === 'black'
+                ? this.abPrunePromise(
+                    childNode,
+                    depth + 1,
+                    alpha,
+                    beta,
+                    'white'
+                  )
+                : this.abPrunePromise(
+                    childNode,
+                    depth + 1,
+                    alpha,
+                    beta,
+                    'black'
+                  );
+            prunePromise.then(
+              processChildNode(resolve, reject, childNode, iterateMove)
+            );
+          } else {
+            return resolveNode();
+          }
+        };
+        iterateMove();
+      });
+    });
+  }
+
   abPrune(node, depth, alpha, beta, color) {
-    this.depthHash.node[depth] += 1;
-    this.nodeCount += 1;
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        this.depthHash.node[depth] += 1;
+        this.nodeCount += 1;
 
-    let board = node.data("Board");
-    node.data("best", node);
+        let board = node.data('Board');
+        node.data('best', node);
 
-    // Basecases
-
-    if (this.advanceDenied(depth)) { // if leaf node
-      if (board.isInCheckMate(color)) {
-        node.data("val", color === "black" ? 9999 : -9999);
-      } else {
-        node.data("val", board.points());
-      }
-      return node;
-    }
-    let val = color === "black" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
-
-    let pump = board.pumpMoves(color);
-    let move = pump();
-
-    while (move){
-      let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-      childNode.data("Board", move);
-      node.appendChild(childNode);
-      childNode = color === "black" ?
-        this.abPrune(childNode, depth + 1, alpha, beta, "white") :
-        this.abPrune(childNode, depth + 1, alpha, beta, "black");
-
-      if (color === "black") {
-        if (val > childNode.data("val")){
-          val = childNode.data("val");
-          node.data("best", childNode);
+        if (this.advanceDenied(depth)) {
+          if (board.isInCheckMate(color)) {
+            node.data('val', color === 'black' ? 9999 : -9999);
+          } else {
+            node.data('val', board.points());
+          }
+          return node;
         }
-        if (val < beta){
-          beta = val;
-        }
-        if (beta <= alpha) {
-          this.depthHash.cuts[depth] += 1;
-          break;
-        }
-      } else {
-        if (val < childNode.data("val")){
-          val = childNode.data("val");
-          node.data("best", childNode);
-        }
-        if (val > alpha){
-          alpha = val;
-        }
-        if (beta <= alpha) {
-          this.depthHash.cuts[depth] += 1;
-          break;
-        }
-      }
-      move = pump();
-    }
 
-    if(node.childIds.length === 0) {
-      node.data("val", color === "black" ? 9999 : -9999);
-      return node;
-    }
+        let val =
+          color === 'black'
+            ? Number.POSITIVE_INFINITY
+            : Number.NEGATIVE_INFINITY;
 
-    node.data("val", val);
-    return node;
+        let pump = board.pumpMoves(color);
+        let move = pump();
+
+        while (move) {
+          let childNode = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
+          childNode.data('Board', move);
+          node.appendChild(childNode);
+
+          if (color === 'black') {
+            this.abPrune(childNode, depth + 1, alpha, beta, 'white');
+          } else {
+            this.abPrune(childNode, depth + 1, alpha, beta, 'black');
+          }
+
+          if (color === 'black') {
+            if (val > childNode.data('val')) {
+              val = childNode.data('val');
+              node.data('best', childNode);
+            }
+            if (val < beta) {
+              beta = val;
+            }
+            if (beta <= alpha) {
+              this.depthHash.cuts[depth] += 1;
+              break;
+            }
+          } else {
+            if (val < childNode.data('val')) {
+              val = childNode.data('val');
+              node.data('best', childNode);
+            }
+            if (val > alpha) {
+              alpha = val;
+            }
+            if (beta <= alpha) {
+              this.depthHash.cuts[depth] += 1;
+              break;
+            }
+          }
+          move = pump();
+        }
+
+        if (node.childIds.length === 0) {
+          node.data('val', color === 'black' ? 9999 : -9999);
+          return node;
+        }
+
+        node.data('val', val);
+        resolve(node);
+      });
+    });
   }
 
   getMove() {
-    let start = Date.now();
+    this.start = Date.now();
     this.nodeCount = 0;
     this.runtimeDepth = this.depth;
     this.depthHash = {
       node: {},
-      cuts: {},
+      cuts: {}
     };
     for (let i = 0; i <= this.depth; i++) {
       this.depthHash.node[i] = 0;
       if (i < this.depth) this.depthHash.cuts[i] = 0;
     }
 
-    // let worker = new Worker("javascript/AI/ab_worker.js");
-    // worker.postMessage({abPrune: this.root});
-    // worker.onmessage = (e) => {
-    //   console.log(e.data);
-    // };
-
     this.root = new __WEBPACK_IMPORTED_MODULE_0_tree_node___default.a();
-    this.root.data("Board", this.board);
-    this.color = "black";
-    this.abPrune(this.root, 0, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, "black");
-    window.root = this.root;
-    window.dh = this.depthHash;
-    console.log("### THOUGHTS ###");
-    console.log(`Total Node Count: ${this.nodeCount} ${this.nodeCount > 12000 ? '(CAPPED)' : ''}`);
-    console.log(`Time: ${(Date.now() - start)/1000}s`);
+    this.root.data('Board', this.board);
+    this.color = 'black';
 
-    console.log(`Hash: ${JSON.stringify(this.depthHash, null, '\t')}`);
-    return this.root.data("best").data("Board").lastMove;
+    return this.abPrunePromise(
+      this.root,
+      0,
+      Number.NEGATIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+      'black'
+    ).then(response => {
+      return this.sendMove.bind(this)();
+    });
+  }
+
+  sendMove() {
+    return new Promise((resolve, reject) => {
+      window.root = this.root;
+      window.dh = this.depthHash;
+      console.log('### THOUGHTS ###');
+      console.log(
+        `Total Node Count: ${this.nodeCount} ${
+          this.nodeCount > 12000 ? '(CAPPED)' : ''
+        }`
+      );
+      console.log(`Time: ${(Date.now() - this.start) / 1000}s`);
+
+      console.log(`Hash: ${JSON.stringify(this.depthHash, null, '\t')}`);
+      resolve(this.root.data('best').data('Board').lastMove);
+    });
   }
 }
 
